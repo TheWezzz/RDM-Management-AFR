@@ -281,21 +281,6 @@ class RDM_logs:
     def compare_firmware(self, uid: rdm_uid) -> tuple[bool, err_warn]:
         pass
 
-    def create_groups(self):
-        groups = {'rdm_uid': {}, 'manufacturers': {}, 'device_types': {}}
-        for uid, data in self.data.items():
-            manufacturer = data.get('manufacturer')
-            device_type = data.get('device_type')
-            if manufacturer:
-                if manufacturer not in groups['manufacturers']:
-                    groups['manufacturers'][manufacturer] = []
-                groups['manufacturers'][manufacturer].append((data.get('name', uid), uid))  # Naam of UID
-            if device_type:
-                if device_type not in groups['device_types']:
-                    groups['device_types'][device_type] = []
-                groups['device_types'][device_type].append((data.get('name', uid), uid))  # Naam of UID
-        return groups
-
     def device_records_to_string(self, uids: list[rdm_uid]):
         res = "\n"
         for uid in uids:
