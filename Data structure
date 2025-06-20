@@ -1,0 +1,15 @@
+log = dict{rdm_uid: device records}
+device records = dict{timestamp:datetime : device_record}
+device_record = dict{parameter_name:string : parameters}
+
+parameter_names = {
+                'manufacurer': string
+                'name': string
+                'firmware_version': string
+                'sensors': dict{'temperature': int, 'humidity': int, tilt_sensor: bool},
+                'errors': set{string},
+                'lamp_hours': int,
+                'device_type': string,
+                'serial_nr': string
+                'extra': dict
+                }
