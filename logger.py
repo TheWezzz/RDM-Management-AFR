@@ -19,6 +19,7 @@ class Logger:
         self.origin = log_origin
         self.print_console = False
         self.buffer = []
+        self.write(f"logger is online", INFO)
 
     def write(self, message: str, severity: str = NONE):
         if self.buffer:
@@ -34,12 +35,12 @@ class Logger:
             with open(self.path, "a") as f:
                 f.write(msg + '\n')
         except OSError as e:
-            raise LogError(f"this computer could not open the log file at location:\n {self.path} \n"
-                           f"OS returned this error: {e}")
+            raise LogError(f"this computer could not open the log file at location: '{self.path}'. "
+                           f"OS returned this error: {e.__repr__()}")
         except Exception as e:
-            raise LogError(f"unknown error while writing to log file: {e}")
+            raise LogError(f"unknown error while writing to log file: {e.repr}")
 
-    def write_buffer(self) -> str:
+    def write_buffer(self):
         if self.print_console:
             print(msg for msg in self.buffer)
         try:

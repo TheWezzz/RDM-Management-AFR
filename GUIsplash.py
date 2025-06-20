@@ -55,6 +55,6 @@ class ConfigWindow(QMainWindow):
         layout.addWidget(info_label)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout
+        layout.addWidget(combo_box)
 
         main_widget.setLayout(layout)

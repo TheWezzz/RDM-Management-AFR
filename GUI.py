@@ -12,7 +12,6 @@ from PyQt6.QtWidgets import (
     QTableView,
     QListWidget,
     QLabel,
-    QFrame,
     QGridLayout,
     QListWidgetItem,
     QDialog,
