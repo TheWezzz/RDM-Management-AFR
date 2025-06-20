@@ -1,11 +1,8 @@
 import json
 
 from scapy.all import sniff, UDP, IP
-
 from logger import Logger, LogError, WARN, ERR, CRIT
-
-# VARIABELEN DIE JE KUNT AANPASSEN
-NETWERK_INTERFACE = "Ethernet"
+from scapy.arch import get_if_list
 
 
 def str_to_hex(s: str) -> str:
@@ -53,6 +50,7 @@ class CommunicationHandler:
         self.path = json_path
         try:
             self.log = Logger(log_path, "CommunicationHandler")
+            # self.log.set_printing(True)
         except LogError as e:
             print(e.__repr__())
             exit(1)
@@ -62,7 +60,7 @@ class CommunicationHandler:
             self.log.write(f"Could not initialize handler: {e.__repr__()}", CRIT)
             exit(1)
         self.last_payload_search = [()]
-        # self.log.set_printing(True)
+        self.available_network_interfaces = get_if_list()
 
     def packet_callback(self, packet):
         """
@@ -92,7 +90,7 @@ class CommunicationHandler:
             # if "5253" in payload_hex: # 'RS'
             #     print("Mogelijk RDM discovery data gevonden!")
 
-    def start_sniffer(self, src_ip, dest_ip):
+    def start_sniffer(self, src_ip, dest_ip, interface):
         """
         Start de Scapy sniffer.
         """
@@ -108,7 +106,7 @@ class CommunicationHandler:
             bpf_filter += f" or dst host {dest_ip}"
 
         print(
-            f"[*] Starten met sniffen op interface: {NETWERK_INTERFACE if NETWERK_INTERFACE else 'automatisch gekozen'}...")
+            f"[*] Starten met sniffen op interface: {interface if interface else 'automatisch gekozen'}...")
         print(f"[*] Filter: {bpf_filter}")
         print(f"[*] Druk op CTRL+C om te stoppen.")
 
@@ -118,16 +116,15 @@ class CommunicationHandler:
             # `prn` is de functie die voor elk pakket wordt aangeroepen.
             # `filter` is het BPF filter.
             # `store=0` zorgt ervoor dat pakketten niet in het geheugen worden opgeslagen.
-            sniff(iface=NETWERK_INTERFACE, prn=self.packet_callback, filter=bpf_filter, store=0)
+            sniff(iface=interface, prn=self.packet_callback, filter=bpf_filter, store=0)
         except PermissionError:
             print("[!] Fout: Geen permissie om te sniffen. Probeer het script als administrator/root uit te voeren.")
         except OSError as e:
             if "No such device" in str(e) or "Interface not found" in str(e):
-                print(f"[!] Fout: Netwerkinterface '{NETWERK_INTERFACE}' niet gevonden.")
+                print(f"[!] Fout: Netwerkinterface '{interface}' niet gevonden.")
                 print(f"    Controleer de naam van de interface en pas NETWERK_INTERFACE aan in het script.")
                 print(f"    Beschikbare interfaces (vereist root/admin rechten om te zien):")
                 try:
-                    from scapy.arch import get_if_list
                     print(f"    {get_if_list()}")
                 except Exception as e_if:
                     print(f"    Kon interfaces niet laden: {e_if}")
