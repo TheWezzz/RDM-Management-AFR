@@ -1,6 +1,6 @@
 import json
 
-from scapy.all import sniff
+from scapy.all import sniff, UDP, IP
 
 from logger import Logger, LogError, WARN, ERR, CRIT
 
@@ -92,7 +92,7 @@ class CommunicationHandler:
             # if "5253" in payload_hex: # 'RS'
             #     print("Mogelijk RDM discovery data gevonden!")
 
-    def start_sniffer(self):
+    def start_sniffer(self, src_ip, dest_ip):
         """
         Start de Scapy sniffer.
         """
@@ -102,12 +102,10 @@ class CommunicationHandler:
         # of "udp and host 192.168.1.100"
         bpf_filter = "udp"
 
-        if DOEL_POORT:
-            bpf_filter += f" and port {DOEL_POORT}"
-        if BRON_IP:
-            bpf_filter += f" and src host {BRON_IP}"
-        if DOEL_IP:
-            bpf_filter += f" and dst host {DOEL_IP}"
+        if src_ip:
+            bpf_filter += f" and src host {src_ip}"
+        if dest_ip:
+            bpf_filter += f" or dst host {dest_ip}"
 
         print(
             f"[*] Starten met sniffen op interface: {NETWERK_INTERFACE if NETWERK_INTERFACE else 'automatisch gekozen'}...")
