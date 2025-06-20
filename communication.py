@@ -2,7 +2,7 @@ import json
 
 from scapy.all import sniff
 
-from logger import Logger, WARN, ERR, CRIT
+from logger import Logger, LogError, WARN, ERR, CRIT
 
 # VARIABELEN DIE JE KUNT AANPASSEN
 NETWERK_INTERFACE = "Ethernet"
@@ -50,11 +50,19 @@ class HexSelection:
 
 class CommunicationHandler:
     def __init__(self, json_path, log_path):
-        self.log = Logger(log_path, "CommunicationHandler")
-        # self.log.set_printing(True)
         self.path = json_path
-        self.json_tree = self.load_json()
+        try:
+            self.log = Logger(log_path, "CommunicationHandler")
+        except LogError as e:
+            print(e.__repr__())
+            exit(1)
+        try:
+            self.json_tree = self.load_json()
+        except (FileNotFoundError, InvalidJsonFormatError) as e:
+            self.log.write(f"Could not initialize handler: {e.__repr__()}", CRIT)
+            exit(1)
         self.last_payload_search = [()]
+        # self.log.set_printing(True)
 
     def packet_callback(self, packet):
         """
@@ -136,12 +144,10 @@ class CommunicationHandler:
             with open(self.path, 'r') as f:
                 packet_data = json.load(f)
         except FileNotFoundError as e:
-            msg = f"File not found at '{self.path}', please check spelling"
-            self.log.write(f"{msg}, caused by {e.__repr__()}", CRIT)
+            msg = f"File not found at '{self.path}', please check spelling. caused by {e.__repr__()}"
             raise FileNotFoundError(msg) from e
         except json.JSONDecodeError as e:
-            msg = f"could not decode current Json format"
-            self.log.write(f"{msg}, caused by: {e.__repr__()}", CRIT)
+            msg = f"could not decode current Json format. caused by: {e.__repr__()}"
             raise InvalidJsonFormatError(msg, self.path, e.lineno) from e
         else:
             return packet_data
@@ -204,8 +210,8 @@ class CommunicationHandler:
                 skipped_packets_count += 1
                 continue
         if skipped_packets_count > 0:
-            raise JsonKeyError(
-                f"Skipped {skipped_packets_count} packets missing udp time during extraction of json file")
+            raise JsonKeyError("time(source->layers->udp->timestamps->udp.time_relative)",
+                               skipped_packets_count)
 
         print(f"Time extraction finished.")
         return times

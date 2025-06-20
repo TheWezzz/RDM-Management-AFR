@@ -6,7 +6,7 @@ from GUIsplash import ConfigWindow
 
 from Dummy import create_dummy_data
 from communication import CommunicationHandler, HexSelection
-from logger import Logger, WARN, ERR, CRIT
+from logger import ERR
 
 
 JSONPath1 = "C:/Users/Wesley/PycharmProjects/RDM Management/Ayrton domino packages.json"
@@ -14,6 +14,8 @@ JSONPath2 = "C:/Users/Wesley/PycharmProjects/RDM Management/Ayrton parameters 2.
 LogPath = "C:/Users/Wesley/PycharmProjects/RDM Management/log"
 
 if __name__ == "__main__":
+
+    # JSON EXTRACTION
     start_selection = HexSelection("Start of payload", "0x0a", 3, "dec")
     try1 = HexSelection("matching couples", "0x09", 1, "dec")
     value_selection = HexSelection("Value", "0x21", 14, "ascii")
@@ -40,10 +42,13 @@ if __name__ == "__main__":
     #     print(f"formatting result failed: {e}")
     #     exit(1)
 
+
+    # DUMMY DATA TEST
     app = QApplication(sys.argv)
     data = create_dummy_data()
     window = ConfigWindow()
     window.show()
     app.exec()
 
+    # SCAPY SNIFFER TEST
     # handler1.start_sniffer()
