@@ -90,6 +90,9 @@ class MainWindow(QMainWindow):
         try:  # TODO fix and check error printing in GUI in rest of the file
             names = self.data_handler.get_names(rdm_uids)
         except ExceptionGroup as eGroup:
+            # group of value errors with either no names found or fewer names than records, or uid error
+            # eGroup.message contains "found records with invalid names"
+            # then all exceptions from the eGroup are added to both log message and popup message
             msg = f"could not retrieve data from RDM logs. {eGroup.message} caused by: "
             popup_msg = msg
             for e in eGroup.exceptions:
@@ -100,8 +103,14 @@ class MainWindow(QMainWindow):
             exit(1)
 
         try:
-            serials = self.data_handler.get_serials(rdm_uids)
+            serials = self.data_handler.get_fws(rdm_uids)
         except ExceptionGroup as eGroupList:
+            # group of Exceptiongroups containing exceptions for firmware versions per individual UID
+            # eGroupList.message contains "found records with invalid firmware history"
+            # eGroup is a group of value errors with either no firmware versions found
+            # or fewer firmware versions than records, or uid error
+            # eGroup.message contains "retrieved {rec_count} records from uid {uid}: {get_rec_text}. {none found or invalid}."
+            # then all exceptions from the eGroup are added to both log message and popup message
             msg = f"could not retrieve data from RDM logs. {eGroupList.message}"
             popup_msg = msg
             for eGroup in eGroupList.exceptions:
@@ -156,7 +165,6 @@ class MainWindow(QMainWindow):
             self.data_handler.selected_uid = None
             self.data_handler.selected_name = None
             self.history_msg_label.setText("Selecteer een apparaat")
-
 
     def _update_status_display(self):
         uid = self.data_handler.selected_uid
@@ -240,7 +248,7 @@ class MainWindow(QMainWindow):
         if device_records:
             for timestamp in device_records:
                 unix_time, time_err = datetime_to_unix(timestamp)
-                if unix_time == 0: # TODO convert to normal raise exception
+                if unix_time == 0:  # TODO convert to normal raise exception
                     message += f"ERROR:    UID: {uid} AT TIMESTAMP: {timestamp}: {time_err}\n"
                     continue
 
@@ -274,7 +282,7 @@ class MainWindow(QMainWindow):
 class PopupDialog(QDialog):
     def __init__(self, text, parent=None):
         super().__init__(parent=parent)
-        
+
         # self.log.write(text)
         self.setWindowTitle("Something went wrong")
 
