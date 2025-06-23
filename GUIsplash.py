@@ -29,15 +29,22 @@ class ConfigWindow(QMainWindow):
         logo_icon = QIcon(logo_pixmap)
         self.setWindowIcon(logo_icon)
 
-        com_handler_setup = CommunicationHandler(JSONPath1, LogPath)
+        self.com_handler_setup = CommunicationHandler(JSONPath1, LogPath)
 
         logo_label = QLabel()
         logo_label.setPixmap(logo_pixmap)
 
-        info_label = QLabel("Select an interface to connect to dmXLAN")
+        iface_info_label = QLabel("Select an interface to connect to dmXLAN")
 
-        combo_box = QComboBox()
-        combo_box.addItems(com_handler_setup.available_network_interfaces)
+        iface_combo_box = QComboBox()
+        iface_combo_box.addItems(list(self.com_handler_setup.available_interfaces.keys()))
+        iface_combo_box.currentTextChanged.connect(self._init_mac_combo_box)
+
+        self.mac_info_label = QLabel("Select a Mac address")
+        self.mac_info_label.setVisible(False)
+
+        self.mac_combo_box = QComboBox()
+        self.mac_combo_box.setVisible(False)
 
         # LAYOUT
         main_widget = QWidget()
@@ -47,9 +54,21 @@ class ConfigWindow(QMainWindow):
         layout.addWidget(logo_label)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout.addWidget(info_label)
-        info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(iface_info_label)
+        iface_info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout.addWidget(combo_box)
+        layout.addWidget(iface_combo_box)
+
+        layout.addWidget(self.mac_info_label)
+        self.mac_info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        layout.addWidget(self.mac_combo_box)
 
         main_widget.setLayout(layout)
+
+    def _init_mac_combo_box(self, iface):
+        self.mac_info_label.setVisible(True)
+        self.mac_combo_box.setVisible(True)
+        filtered_mac_list = self.com_handler_setup.find_devices_by_manufacturer(iface, "lukas")
+        print(filtered_mac_list)
+        self.mac_combo_box.addItems(filtered_mac_list)
