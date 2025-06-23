@@ -103,7 +103,7 @@ class MainWindow(QMainWindow):
             exit(1)
 
         try:
-            serials = self.data_handler.get_fws(rdm_uids)
+            versions = self.data_handler.get_fws(rdm_uids)
         except ExceptionGroup as eGroupList:
             # group of Exceptiongroups containing exceptions for firmware versions per individual UID
             # eGroupList.message contains "found records with invalid firmware history"
@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
             exit(1)
 
         for i in range(len(rdm_uids)):
-            list_item = QListWidgetItem(f"{names[i]} -- Serial: {serials[i]}, RDM UID: {rdm_uids[i]}")  # fixme
+            list_item = QListWidgetItem(f"{names[i]} -- RDM UID: {rdm_uids[i]}, Version: {versions[i]}")  # fixme
             fixture_selector.addItem(list_item)
         fixture_selector.currentItemChanged.connect(self._save_current_selection)
         fixture_selector.currentItemChanged.connect(self._update_status_display)
