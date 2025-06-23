@@ -1,8 +1,8 @@
 import json
 
-from scapy.all import sniff, UDP, IP
+from scapy.all import conf, sniff, UDP, IP, get_if_list
+
 from logger import Logger, LogError, WARN, ERR, CRIT
-from scapy.arch import get_if_list
 
 
 def str_to_hex(s: str) -> str:
@@ -48,19 +48,24 @@ class HexSelection:
 class CommunicationHandler:
     def __init__(self, json_path, log_path):
         self.path = json_path
+
         try:
             self.log = Logger(log_path, "CommunicationHandler")
             # self.log.set_printing(True)
         except LogError as e:
             print(e.__repr__())
             exit(1)
+
         try:
             self.json_tree = self.load_json()
         except (FileNotFoundError, InvalidJsonFormatError) as e:
             self.log.write(f"Could not initialize handler: {e.__repr__()}", CRIT)
             exit(1)
+
         self.last_payload_search = [()]
-        self.available_network_interfaces = get_if_list()
+        self.available_network_interfaces = []
+        for iface in conf.ifaces.values():
+            self.available_network_interfaces.append(iface.description)
 
     def packet_callback(self, packet):
         """

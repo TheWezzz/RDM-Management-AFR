@@ -2,29 +2,18 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QMainWindow,
-    QTabWidget,
     QWidget,
-    QPushButton,
     QComboBox,
     QVBoxLayout,
-    QHBoxLayout,
-    QTableView,
-    QListWidget,
-    QLabel,
-    QFrame,
-    QGridLayout,
-    QListWidgetItem,
-    QDialog,
-    QDialogButtonBox,
-    QStyle
+    QLabel
 )
 
 from communication import CommunicationHandler
-from data import RDM_logs
-from logger import Logger, INFO, WARN, ERR
+from logger import Logger
 
 JSONPath1 = "C:/Users/Wesley/PycharmProjects/RDM Management/Ayrton domino packages.json"
 LogPath = "C:/Users/Wesley/PycharmProjects/RDM Management/log"
+
 
 def str_to_html(s: str) -> str:
     return s.replace("\n", "<br>")
@@ -34,7 +23,7 @@ class ConfigWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.log = Logger("C:/Users/Wesley/PycharmProjects/RDM Management/log", "Config Window")
-        self.setGeometry(400, 400, 500, 300)
+        self.setFixedSize(500, 300)
         self.setWindowTitle("RDM Management Configuration")
         logo_pixmap = QPixmap("RDMlogo.jpg")
         logo_icon = QIcon(logo_pixmap)
