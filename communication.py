@@ -1,6 +1,5 @@
 import json
 
-from scapy.all import conf, sniff, UDP, IP, get_if_list
 from scapy.all import (
     conf,
     sniff,
@@ -10,6 +9,7 @@ from scapy.all import (
     srp,
     Ether,
     get_if_list)
+from scapy.data import ManufDA as ManufTool
 
 from logger import Logger, LogError, INFO, WARN, ERR, CRIT
 
@@ -160,6 +160,56 @@ class CommunicationHandler:
             raise InvalidJsonFormatError(msg, self.path, e.lineno) from e
         else:
             return packet_data
+
+    def find_devices_by_manufacturer(self, interface_description: str, manuf_filter: str = None) -> list[str]:
+        """
+        Scans the network of a specific interface, looks up the manufacturer of each device
+        and returns a formatted list.
+
+        Args:
+            interface_description (str): The human-readable name of the interface (from the combobox).
+            manuf_filter (str, optional): A keyword to filter on in the manufacturer name.
+                                                  If None, all devices will be returned.
+
+        Returns:
+            list[str]: A list of formatted strings, e.g.: ['Apple_2A:B3:C4 (aa:bb:cc:2a:b3:c4)'].
+        """
+        # Look up the correct Scapy interface object
+        target_iface = self.available_interfaces.get(interface_description)
+        if not target_iface or not target_iface.ip:
+            # Use your logger here if you have one
+            self.log.write(f"Could not find interface '{interface_description}' or it has no IP.", WARN)
+            return []
+
+        # Perform the ARP scan (this part remains the same)
+        network = target_iface.ip.rsplit('.', 1)[0] + '.0/24'
+        self.log.write(f"Starting ARP scan on {network} via {interface_description}...", INFO)
+
+        arp_request = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=network)
+        answering_devices, _ = srp(arp_request, timeout=2, iface=target_iface, verbose=False)
+
+        # Process the results and look up the manufacturer
+        devices_formatted = []
+        for sent, received in answering_devices:
+            mac = received.hwsrc
+
+            # Look up the manufacturer using get_manuf()
+            manuf = ManufTool.lookup(mac)
+
+            # get_manuf() returns the OUI if the manufacturer is unknown. We replace this with "Unknown".
+            # An OUI in the return can be recognized by the fact that it contains no letters (except A-F).
+            # if manuf.replace(':', '').isalnum() and not any(c.isalpha() for c in manuf if c > 'F'):
+            #      manuf = "Unknown"
+
+            # Apply the filter (if specified)
+            if manuf_filter:
+                if manuf_filter.lower() not in manuf.lower():
+                    continue
+                else:
+                    devices_formatted.append(manuf.lower())
+
+        self.log.write(f"Scan completed. {len(devices_formatted)} devices found matching the filter.", INFO)
+        return devices_formatted
 
     def extract_udp_payloads(self):
         udp_payloads = []
