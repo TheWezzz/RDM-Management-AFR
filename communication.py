@@ -9,8 +9,7 @@ from scapy.all import (
     srp,
     Ether,
     get_if_list)
-from scapy.data import ManufDA as ManufTool
-
+from mac_vendor_lookup import MacLookup
 from logger import Logger, LogError, INFO, WARN, ERR, CRIT
 
 
@@ -71,8 +70,11 @@ class CommunicationHandler:
             self.log.write(f"Could not initialize handler: {e.__repr__()}", CRIT)
             exit(1)
 
+        self.maclookup = MacLookup()
+        self.maclookup.update_vendors()
+
         self.last_payload_search = [()]
-        self.available_interfaces = {} # Een dictionary is hier handiger
+        self.available_interfaces = {}
         for iface in conf.ifaces.values():
             self.available_interfaces[iface.description] = iface
 
@@ -194,7 +196,7 @@ class CommunicationHandler:
             mac = received.hwsrc
 
             # Look up the manufacturer using get_manuf()
-            manuf = ManufTool.lookup(mac)
+            manuf = self.maclookup.lookup(mac)
 
             # get_manuf() returns the OUI if the manufacturer is unknown. We replace this with "Unknown".
             # An OUI in the return can be recognized by the fact that it contains no letters (except A-F).
