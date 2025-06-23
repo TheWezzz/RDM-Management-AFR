@@ -1,8 +1,17 @@
 import json
 
 from scapy.all import conf, sniff, UDP, IP, get_if_list
+from scapy.all import (
+    conf,
+    sniff,
+    UDP,
+    IP,
+    ARP,
+    srp,
+    Ether,
+    get_if_list)
 
-from logger import Logger, LogError, WARN, ERR, CRIT
+from logger import Logger, LogError, INFO, WARN, ERR, CRIT
 
 
 def str_to_hex(s: str) -> str:
@@ -63,9 +72,9 @@ class CommunicationHandler:
             exit(1)
 
         self.last_payload_search = [()]
-        self.available_network_interfaces = []
+        self.available_interfaces = {} # Een dictionary is hier handiger
         for iface in conf.ifaces.values():
-            self.available_network_interfaces.append(iface.description)
+            self.available_interfaces[iface.description] = iface
 
     def packet_callback(self, packet):
         """
@@ -290,7 +299,7 @@ class CommunicationHandler:
                     print("  |  L", "_" * 50)  # Scheidingsteken na verwerking van elke pointer in de lijst
                 valuelist.append(value)
             if prettyprint:
-                print("  L", "_" * 60)  # Scheidingsteken na verwerking van elke pointer in de lijst
+                print("  L", "_" * 60)  # Scheidingsteken na verwerking van elke selection in de lijst
 
             selection_result.append(valuelist)
         self.last_payload_search = selection_result
