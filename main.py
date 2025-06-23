@@ -4,14 +4,14 @@ from PyQt6.QtWidgets import QApplication
 from GUI import MainWindow
 from GUIsplash import ConfigWindow
 
+from FILENAMES import *
 from Dummy import create_dummy_data
 from communication import CommunicationHandler, HexSelection
 from logger import ERR
 
 
-JSONPath1 = ""
-JSONPath2 = ""
-LogPath = ""
+JsonPath1 = JSONPATH
+LogPath = LOGPATH
 
 if __name__ == "__main__":
 
@@ -20,7 +20,7 @@ if __name__ == "__main__":
     try1 = HexSelection("matching couples", "0x09", 1, "dec")
     value_selection = HexSelection("Value", "0x21", 14, "ascii")
 
-    handler1 = CommunicationHandler(JSONPath1, LogPath)
+    handler1 = CommunicationHandler(JsonPath1, LogPath)
 
     try:
         res = handler1.search_payload([start_selection, try1, value_selection], prettyprint=False)
