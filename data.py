@@ -31,10 +31,9 @@ ERR_NO_RDM_UID = "could not find matching id"
 WARN_ONLY_ONE_RECORD = "only one record found, make sure this is a new uid"
 INFO_SUCCESS = "success"
 ERR_NO_NAMES_FOUND = "could not find any name"
-ERR_NO_SERIALS_FOUND = "could not find any serial number"
-ERR_INCONSISTENT_SERIALS_FOUND = "inconsistent serial numbers found"
-ERR_MISSING_SERIAL = "missing serial number"
-ERR_INCONSISTENT_SERIAL = "inconsistent serial number"
+ERR_NO_FW_FOUND = "could not find any firmware version"
+ERR_INCOMPLETE_FW_HISTORY = "missing firmware versions at some timestamps"
+ERR_MISSING_FW = "missing firmware version"
 
 month_texts = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
                "november", "december")
@@ -98,7 +97,6 @@ class RDM_logs:
             sens: sensors,
             err: list[str],
             hours: lamp_hours,
-            serial: serial_number,
             **kwargs) -> err_warn | bool:
         if uid in self.data:
             if time in self.data[uid]:
@@ -111,7 +109,6 @@ class RDM_logs:
                     'sensors': sens,
                     'errors': set(err),
                     'lamp_hours': hours,
-                    'serial_number': serial,
                     **kwargs}})  # Mogelijkheid om extra parameters toe te voegen
                 return True
         else:  # uid not in log
@@ -122,7 +119,6 @@ class RDM_logs:
                     'sensors': sens,
                     'errors': set(err),
                     'lamp_hours': hours,
-                    'serial_number': serial,
                     **kwargs}}})
             return True
 
@@ -224,57 +220,55 @@ class RDM_logs:
             else:
                 res.append(name)
         if err_list:
-            raise ExceptionGroup("found records without names.", err_list)
+            raise ExceptionGroup("found records with invalid names.", err_list)
         return res
 
-    def get_serial(self, uid: rdm_uid) -> serial_number:
+    def get_fw(self, uid: rdm_uid) -> serial_number:
         rec, get_rec_text = self.get_device_records(uid)
         if rec:
             rec_count = len(rec)
-            serial_count = 0
-            matching_serial_count = 0
+            fw_count = 0
+            fw_change_count = 0
             err_list = []
 
             first_rec_key = list(rec.keys())[0]
-            serial = rec[first_rec_key].get('serial_number', None)
+            fw_version = rec[first_rec_key].get('firmware_version', None)
             for timestamp in rec:
-                next_serial = rec[timestamp].get('serial_number', None)
-                if not next_serial:
-                    err_list.append(ValueError(f"uid {uid} at {timestamp}: {ERR_MISSING_SERIAL}"))
-                elif next_serial != serial:
-                    err_list.append(ValueError(f"uid {uid} at {timestamp}: {ERR_INCONSISTENT_SERIAL} "
-                                               f"('{serial}' != '{next_serial}')"))
-                    serial = next_serial
-                    serial_count += 1
-                elif serial == next_serial:
-                    serial_count += 1
-                    matching_serial_count += 1
+                next_fw_version = rec[timestamp].get('firmware_version', None)
+                if not next_fw_version:
+                    err_list.append(ValueError(f"uid {uid} at {timestamp}: {ERR_MISSING_FW}"))
+                elif next_fw_version != fw_version:
+                    fw_version = next_fw_version
+                    fw_count += 1
+                    fw_change_count += 1
+                elif fw_version == next_fw_version:
+                    fw_count += 1
 
-            if not serial:
-                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. {ERR_NO_SERIALS_FOUND}.",
+            if not fw_version:
+                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. {ERR_NO_FW_FOUND}.",
                                      err_list)
-            elif serial_count < rec_count or serial_count != matching_serial_count:
-                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. {ERR_INCONSISTENT_SERIALS_FOUND}.",
+            elif fw_count < rec_count:
+                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. {ERR_INCOMPLETE_FW_HISTORY}.",
                                      err_list)
             else:
-                return serial
+                return fw_version
         else:
             raise ValueError(f"could not retrieve record from uid {uid}: {get_rec_text}. ")
 
-    def get_serials(self, uids: list[rdm_uid]) -> list[serial_number]:
+    def get_fws(self, uids: list[rdm_uid]) -> list[serial_number]:
         res = []
         err_list = []
         for uid in uids:
             try:
-                name= self.get_serial(uid)
+                fw = self.get_fw(uid)
             except ExceptionGroup as eGroup:
                 err_list.append(eGroup)
             except ValueError as e:
                 err_list.append([e])
             else:
-                res.append(name)
+                res.append(fw)
         if err_list:
-            raise ExceptionGroup("found records with invalid serial numbers.", err_list)
+            raise ExceptionGroup("found records with invalid firmware history", err_list)
         return res
 
     # TODO: go through the firmware records of a uid list and return dict

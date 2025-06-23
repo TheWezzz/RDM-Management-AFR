@@ -100,7 +100,7 @@ class MainWindow(QMainWindow):
             exit(1)
 
         try:
-            serials = self.data_handler.get_serials(rdm_uids)
+            serials = self.data_handler.get_fws(rdm_uids)
         except ExceptionGroup as eGroupList:
             msg = f"could not retrieve data from RDM logs. {eGroupList.message}"
             popup_msg = msg
