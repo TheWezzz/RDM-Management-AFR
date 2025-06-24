@@ -40,7 +40,7 @@ class ConfigWindow(QMainWindow):
         iface_combo_box.addItems(list(self.com_handler_setup.available_interfaces.keys()))
         iface_combo_box.currentTextChanged.connect(self._init_mac_combo_box)
 
-        self.mac_info_label = QLabel("Select a Mac address")
+        self.mac_info_label = QLabel("No compatible Mac addresses found")
         self.mac_info_label.setVisible(False)
 
         self.mac_combo_box = QComboBox()
@@ -67,8 +67,10 @@ class ConfigWindow(QMainWindow):
         main_widget.setLayout(layout)
 
     def _init_mac_combo_box(self, iface):
-        self.mac_info_label.setVisible(True)
-        self.mac_combo_box.setVisible(True)
         filtered_mac_list = self.com_handler_setup.find_devices_by_manufacturer(iface, "lukas")
-        print(filtered_mac_list)
-        self.mac_combo_box.addItems(filtered_mac_list)
+        print(f"devices that match filter: {filtered_mac_list}")
+        if len(filtered_mac_list) > 0:
+            self.mac_info_label.setText("Select a mac from the list")
+            self.mac_combo_box.addItems(filtered_mac_list)
+            self.mac_info_label.setVisible(True)
+            self.mac_combo_box.setVisible(True)
