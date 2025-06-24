@@ -1,5 +1,6 @@
 import json
 
+from mac_vendor_lookup import MacLookup
 from scapy.all import (
     conf,
     sniff,
@@ -9,8 +10,8 @@ from scapy.all import (
     srp,
     Ether,
     get_if_list)
-from mac_vendor_lookup import MacLookup
-from logger import Logger, LogError, INFO, WARN, ERR, CRIT
+
+from logger import Logger, LogError, INFO, WARN, CRIT
 
 
 def str_to_hex(s: str) -> str:
@@ -71,7 +72,7 @@ class CommunicationHandler:
             exit(1)
 
         self.maclookup = MacLookup()
-        self.maclookup.update_vendors()
+        # self.maclookup.update_vendors()
 
         self.last_payload_search = [()]
         self.available_interfaces = {}
@@ -168,12 +169,11 @@ class CommunicationHandler:
         Scans the network of a specific interface, looks up the manufacturer of each device
         and returns a formatted list.
 
-        Args:
-            interface_description (str): The human-readable name of the interface (from the combobox).
-            manuf_filter (str, optional): A keyword to filter on in the manufacturer name.
-                                                  If None, all devices will be returned.
+        @:param:
+            interface_description (str): The human-readable name of the interface (from the GUI combobox).
+            manuf_filter (str, optional): A keyword to filter on the manufacturer name. If None, all devices will be returned.
 
-        Returns:
+        @:return:
             list[str]: A list of formatted strings, e.g.: ['Apple_2A:B3:C4 (aa:bb:cc:2a:b3:c4)'].
         """
         # Look up the correct Scapy interface object
