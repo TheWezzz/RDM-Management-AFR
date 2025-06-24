@@ -74,7 +74,8 @@ class CommunicationHandler:
         self.maclookup = MacLookup()
         # self.maclookup.update_vendors()
 
-        self.last_payload_search = [()]
+        self.selected_interface = None
+        self.selected_ips = []
         self.available_interfaces = {}
         for iface in conf.ifaces.values():
             self.available_interfaces[iface.description] = iface

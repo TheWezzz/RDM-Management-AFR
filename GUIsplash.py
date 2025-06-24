@@ -67,6 +67,7 @@ class ConfigWindow(QMainWindow):
         main_widget.setLayout(layout)
 
     def _init_mac_combo_box(self, iface):
+        self.com_handler_setup.interface = iface
         filtered_mac_list = self.com_handler_setup.find_devices_by_manufacturer(iface, "lukas")
         print(f"devices that match filter: {filtered_mac_list}")
         if len(filtered_mac_list) > 0:
