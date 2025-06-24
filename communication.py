@@ -193,10 +193,15 @@ class CommunicationHandler:
         # Process the results and look up the manufacturer
         devices_formatted = []
         for sent, received in answering_devices:
+            print(f"found ip {received.psrc} on network with mac {received.hwsrc}", end="")
             mac = received.hwsrc
 
             # Look up the manufacturer using get_manuf()
-            manuf = self.maclookup.lookup(mac)
+            try:
+                manuf = self.maclookup.lookup(mac)
+                print(f", found manufacturer: {manuf}")
+            except KeyError:
+                print(f", no manufacturer found")
 
             # get_manuf() returns the OUI if the manufacturer is unknown. We replace this with "Unknown".
             # An OUI in the return can be recognized by the fact that it contains no letters (except A-F).
