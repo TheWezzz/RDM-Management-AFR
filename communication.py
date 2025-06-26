@@ -173,9 +173,6 @@ class CommunicationHandler:
 
         @:param:
             manuf_filter (str, optional): A keyword to filter on the manufacturer name. If None, all devices will be returned.
-
-        @:return:
-            list[str]: A list of formatted strings, e.g.: ['Apple_2A:B3:C4 (aa:bb:cc:2a:b3:c4)'].
         """
         # Look up the correct Scapy interface object
         target_iface = self.available_interfaces.get(self.selected_interface)
