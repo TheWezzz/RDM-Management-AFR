@@ -10,10 +10,7 @@ from PyQt6.QtWidgets import (
 
 from communication import CommunicationHandler
 from logger import Logger
-
-JSONPath1 = "C:/Users/Wesley/PycharmProjects/RDM Management/Ayrton domino packages.json"
-LogPath = "C:/Users/Wesley/PycharmProjects/RDM Management/log"
-
+from FILENAMES import *
 
 def str_to_html(s: str) -> str:
     return s.replace("\n", "<br>")
@@ -22,14 +19,14 @@ def str_to_html(s: str) -> str:
 class ConfigWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.log = Logger("C:/Users/Wesley/PycharmProjects/RDM Management/log", "Config Window")
+        self.log = Logger(LOGPATH, "Config Window")
         self.setFixedSize(500, 300)
         self.setWindowTitle("RDM Management Configuration")
         logo_pixmap = QPixmap("RDMlogo.jpg")
         logo_icon = QIcon(logo_pixmap)
         self.setWindowIcon(logo_icon)
 
-        self.com_handler_setup = CommunicationHandler(JSONPath1, LogPath)
+        self.com_handler_setup = CommunicationHandler(JSONPATH, LOGPATH)
 
         logo_label = QLabel()
         logo_label.setPixmap(logo_pixmap)
