@@ -101,7 +101,7 @@ class CommunicationHandler:
         self.maclookup = MacLookup()
         # self.maclookup.update_vendors()
 
-        self.selected_devices = None
+        self.selected_devices = []
         self.available_ips = []
         self.selected_interface = None
         self.available_interfaces = {}
@@ -206,6 +206,7 @@ class CommunicationHandler:
             self.selected_devices.append(device)
 
         self.log.write(f"Scan completed. {len(replying_devices)} devices found matching the filter.", INFO)
+        return self.selected_devices
 
     def extract_udp_payloads(self):
         udp_payloads = []

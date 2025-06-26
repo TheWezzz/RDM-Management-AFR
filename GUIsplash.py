@@ -8,6 +8,8 @@ from PyQt6.QtWidgets import (
     QLabel
 )
 
+from GUI import MainWindow
+from Dummy import create_dummy_data
 from communication import CommunicationHandler
 from logger import Logger
 from FILENAMES import *
@@ -41,6 +43,7 @@ class ConfigWindow(QMainWindow):
         self.mac_info_label.setVisible(False)
 
         self.mac_combo_box = QComboBox()
+        self.mac_combo_box.currentTextChanged.connect(self._start_mainwindow)
         self.mac_combo_box.setVisible(False)
 
         # LAYOUT
@@ -65,9 +68,16 @@ class ConfigWindow(QMainWindow):
 
     def _init_mac_combo_box(self, iface):
         self.com_handler_setup.selected_interface = iface
-        self.com_handler_setup.find_devices_by_manufacturer() # TODO notify user to wait
-        ip_s = self.com_handler_setup.selected_ips
-            self.mac_info_label.setText("Select a mac from the list")
-            self.mac_combo_box.addItems(filtered_mac_list)
+        devices = self.com_handler_setup.find_devices_by_manufacturer() # TODO notify user to wait
+        if devices:
+            self.mac_info_label.setText("Select a device from the list")
+            for dev in devices:
+                self.mac_combo_box.addItem(f"{dev["manufacturer"]}: {dev['ip address']}")
             self.mac_info_label.setVisible(True)
             self.mac_combo_box.setVisible(True)
+
+    def _start_mainwindow(self, device):
+        self.com_handler_setup.selected_devices = [device]
+        data = create_dummy_data()
+        window = MainWindow(data, self.com_handler_setup)
+        window.show()

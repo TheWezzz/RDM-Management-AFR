@@ -1,11 +1,8 @@
 import sys
 
 from PyQt6.QtWidgets import QApplication
-from GUI import MainWindow
 from GUIsplash import ConfigWindow
 
-from FILENAMES import *
-from Dummy import create_dummy_data
 from communication import CommunicationHandler, HexSelection
 from logger import ERR
 
@@ -32,7 +29,6 @@ if __name__ == "__main__":
 
     # DUMMY DATA TEST
     app = QApplication(sys.argv)
-    data = create_dummy_data()
     window = ConfigWindow()
     window.show()
     app.exec()
