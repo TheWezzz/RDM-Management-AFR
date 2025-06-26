@@ -1,13 +1,15 @@
 import json
 
-from mac_vendor_lookup import MacLookup
+from mac_vendor_lookup import MacLookup, VendorNotFoundError
 from scapy.all import (
     conf,
     sniff,
     UDP,
     IP,
+    ICMP,
     ARP,
     srp,
+    sr,
     Ether,
     get_if_list)
 
@@ -165,28 +167,27 @@ class CommunicationHandler:
         else:
             return packet_data
 
-    def find_devices_by_manufacturer(self, interface_description: str, manuf_filter: str = None) -> list[str]:
+    def find_devices_by_manufacturer(self, manuf_filter: str = None) -> list[str]:
         """
-        Scans the network of a specific interface, looks up the manufacturer of each device
+        Scans the network of the selected interface, looks up the manufacturer of each device
         and returns a formatted list.
 
         @:param:
-            interface_description (str): The human-readable name of the interface (from the GUI combobox).
             manuf_filter (str, optional): A keyword to filter on the manufacturer name. If None, all devices will be returned.
 
         @:return:
             list[str]: A list of formatted strings, e.g.: ['Apple_2A:B3:C4 (aa:bb:cc:2a:b3:c4)'].
         """
         # Look up the correct Scapy interface object
-        target_iface = self.available_interfaces.get(interface_description)
+        target_iface = self.available_interfaces.get(self.selected_interface)
         if not target_iface or not target_iface.ip:
             # Use your logger here if you have one
-            self.log.write(f"Could not find interface '{interface_description}' or it has no IP.", WARN)
+            self.log.write(f"Could not find interface '{self.selected_interface}' or it has no IP.", WARN)
             return []
 
         # Perform the ARP scan (this part remains the same)
         network = target_iface.ip.rsplit('.', 1)[0] + '.0/24'
-        self.log.write(f"Starting ARP scan on {network} via {interface_description}...", INFO)
+        self.log.write(f"Starting ARP scan on {network} via {self.selected_interface}...", INFO)
 
         arp_request = Ether(dst="ff:ff:ff:ff:ff:ff") / ARP(pdst=network)
         answering_devices, _ = srp(arp_request, timeout=2, iface=target_iface, verbose=False)
@@ -201,7 +202,7 @@ class CommunicationHandler:
             try:
                 manuf = self.maclookup.lookup(mac)
                 print(f", found manufacturer: {manuf}")
-            except KeyError:
+            except VendorNotFoundError:
                 print(f", no manufacturer found")
 
             # get_manuf() returns the OUI if the manufacturer is unknown. We replace this with "Unknown".
