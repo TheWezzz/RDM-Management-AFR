@@ -65,9 +65,8 @@ class ConfigWindow(QMainWindow):
 
     def _init_mac_combo_box(self, iface):
         self.com_handler_setup.selected_interface = iface
-        filtered_mac_list = self.com_handler_setup.find_devices_by_manufacturer() # TODO notify user to wait
-        print(f"devices that match filter: {filtered_mac_list}")
-        if len(filtered_mac_list) > 0:
+        self.com_handler_setup.find_devices_by_manufacturer() # TODO notify user to wait
+        ip_s = self.com_handler_setup.selected_ips
             self.mac_info_label.setText("Select a mac from the list")
             self.mac_combo_box.addItems(filtered_mac_list)
             self.mac_info_label.setVisible(True)

@@ -7,7 +7,6 @@ from scapy.all import (
     UDP,
     IP,
     ICMP,
-    srp,
     sr,
     Ether,
     get_if_list)
@@ -102,7 +101,7 @@ class CommunicationHandler:
         self.maclookup = MacLookup()
         # self.maclookup.update_vendors()
 
-        self.selected_ips = None
+        self.selected_devices = None
         self.available_ips = []
         self.selected_interface = None
         self.available_interfaces = {}
@@ -167,7 +166,7 @@ class CommunicationHandler:
                 # if "5253" in payload_hex: # 'RS'
                 #     print("Mogelijk RDM discovery data gevonden!")
 
-    def find_devices_by_manufacturer(self, manuf_filter: str = None) -> list[str]:
+    def find_devices_by_manufacturer(self, manuf_filter: str = None):
         """
         Scans the network of the selected interface, looks up the manufacturer of each device
         and returns a formatted list.
@@ -196,44 +195,17 @@ class CommunicationHandler:
             replying_devices.append(dict({"ip address": ip, "mac address": mac, "manufacturer": manuf}))
 
         # print results
-        devices_formatted = []
         print(f"found {len(replying_devices)} device{'s' if len(replying_devices) > 1 else ''} on interface '{self.selected_interface}':")
         for device in replying_devices:
             print(f"-- ip address '{device["ip address"]}' with mac '{device["mac address"]}', manufacturer '{device['manufacturer']}' ")
 
-            # # Apply the filter (if specified)
-            # if manuf_filter:
-            #     if manuf_filter.lower() not in manuf.lower():
-            #         continue
-            #     else:
-            #         devices_formatted.append(manuf.lower())
+            # Apply the filter (if specified)
+            if manuf_filter:
+                if manuf_filter.lower() not in device["manufacturer"].lower():
+                    continue
+            self.selected_devices.append(device)
 
-        self.log.write(f"Scan completed. {len(devices_formatted)} devices found matching the filter.", INFO)
-        return devices_formatted
-
-    def get_active_ips(self):
-        target_iface = self.available_interfaces.get(self.selected_interface)
-        if not target_iface or not target_iface.ip:
-            self.log.write(f"Could not find interface '{target_iface}' or it has no IP.", WARN)
-
-        network_id = target_iface.ip.rsplit('.', 2)[0]
-        cidr = '/16'
-        ip_target_range = f"{network_id}.0.0{cidr}"
-
-        ping_replies = []
-        # Perform ping scan
-        try:
-            self.log.write(f"sending pings to all ip addresses in range {ip_target_range}", INFO)
-            ping_replies, ping_no_replies = sr(IP(dst=ip_target_range)/ICMP(), timeout=0, verbose=1)
-            print(ping_replies)
-            self.log.write(f"resulted in {len(ping_replies)} devices replying.", INFO)
-        except Exception as e:
-            self.log.write(f"Fault during ping scan: {e.__repr__()}", WARN)
-
-        ping_replies_ips = []
-        for sent, recieved in ping_replies:
-            ping_replies_ips.append(recieved.src)
-        return ping_replies_ips
+        self.log.write(f"Scan completed. {len(replying_devices)} devices found matching the filter.", INFO)
 
     def extract_udp_payloads(self):
         udp_payloads = []
@@ -376,5 +348,4 @@ class CommunicationHandler:
                 print("  L", "_" * 60)  # Scheidingsteken na verwerking van elke selection in de lijst
 
             selection_result.append(valuelist)
-        self.last_payload_search = selection_result
         return selection_result
