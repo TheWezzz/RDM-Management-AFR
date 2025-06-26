@@ -37,4 +37,4 @@ if __name__ == "__main__":
     app.exec()
 
     # SCAPY SNIFFER TEST
-    # handler1.start_sniffer()
+    # handler1.sniff_data()
