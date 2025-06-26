@@ -82,33 +82,18 @@ class CommunicationHandler:
         for iface in conf.ifaces.values():
             self.available_interfaces[iface.description] = iface
 
-    def packet_callback(self, packet):
-        """
-        Deze functie wordt aangeroepen voor elk gesniffed pakket dat voldoet aan het filter.
-        """
-        # Controleer of het pakket een IP-laag en een UDP-laag heeft
-        if IP in packet and UDP in packet:
-            ip_layer = packet[IP]
-            udp_layer = packet[UDP]
-
-            # Haal de payload op (de data binnen het UDP pakket)
-            payload = udp_layer.payload
-
-            # Converteer payload naar hex message, vergelijkbaar me t Wireshark
-            payload_hex = bytes(payload).hex()
-
-            print(f"--- Nieuw UDP Pakket Ontvangen ---")
-            print(f"Bron IP:       {ip_layer.src}")
-            print(f"Doel IP:       {ip_layer.dst}")
-            print(f"Bron Poort:    {udp_layer.sport}")
-            print(f"Doel Poort:    {udp_layer.dport}")
-            print(f"Payload Lengte:{len(payload)} bytes")
-            print(f"Payload (hex): {payload_hex}")
-
-            # Hier kun je logica toevoegen om de payload_hex te analyseren
-            # Bijvoorbeeld, zoek naar specifieke RDM start codes of patronen
-            # if "5253" in payload_hex: # 'RS'
-            #     print("Mogelijk RDM discovery data gevonden!")
+    def load_json(self) -> dict:
+        try:
+            with open(self.path, 'r') as f:
+                packet_data = json.load(f)
+        except FileNotFoundError as e:
+            msg = f"File not found at '{self.path}', please check spelling. caused by {e.__repr__()}"
+            raise FileNotFoundError(msg) from e
+        except json.JSONDecodeError as e:
+            msg = f"could not decode current Json format. caused by: {e.__repr__()}"
+            raise InvalidJsonFormatError(msg, self.path, e.lineno) from e
+        else:
+            return packet_data
 
     def start_sniffer(self, src_ip, dest_ip, interface):
         """
@@ -154,18 +139,30 @@ class CommunicationHandler:
         except Exception as e:
             print(f"[!] Een onverwachte fout is opgetreden: {e}")
 
-    def load_json(self) -> dict:
-        try:
-            with open(self.path, 'r') as f:
-                packet_data = json.load(f)
-        except FileNotFoundError as e:
-            msg = f"File not found at '{self.path}', please check spelling. caused by {e.__repr__()}"
-            raise FileNotFoundError(msg) from e
-        except json.JSONDecodeError as e:
-            msg = f"could not decode current Json format. caused by: {e.__repr__()}"
-            raise InvalidJsonFormatError(msg, self.path, e.lineno) from e
-        else:
-            return packet_data
+    def packet_callback(self, packet):
+            # Controleer of het pakket een IP-laag en een UDP-laag heeft
+            if IP in packet and UDP in packet:
+                ip_layer = packet[IP]
+                udp_layer = packet[UDP]
+
+                # Haal de payload op (de data binnen het UDP pakket)
+                payload = udp_layer.payload
+
+                # Converteer payload naar hex message, vergelijkbaar me t Wireshark
+                payload_hex = bytes(payload).hex()
+
+                print(f"--- Nieuw UDP Pakket Ontvangen ---")
+                print(f"Bron IP:       {ip_layer.src}")
+                print(f"Doel IP:       {ip_layer.dst}")
+                print(f"Bron Poort:    {udp_layer.sport}")
+                print(f"Doel Poort:    {udp_layer.dport}")
+                print(f"Payload Lengte:{len(payload)} bytes")
+                print(f"Payload (hex): {payload_hex}")
+
+                # Hier kun je logica toevoegen om de payload_hex te analyseren
+                # Bijvoorbeeld, zoek naar specifieke RDM start codes of patronen
+                # if "5253" in payload_hex: # 'RS'
+                #     print("Mogelijk RDM discovery data gevonden!")
 
     def find_devices_by_manufacturer(self, manuf_filter: str = None) -> list[str]:
         """
@@ -219,6 +216,30 @@ class CommunicationHandler:
 
         self.log.write(f"Scan completed. {len(devices_formatted)} devices found matching the filter.", INFO)
         return devices_formatted
+
+    def get_active_ips(self):
+        target_iface = self.available_interfaces.get(self.selected_interface)
+        if not target_iface or not target_iface.ip:
+            self.log.write(f"Could not find interface '{target_iface}' or it has no IP.", WARN)
+
+        network_id = target_iface.ip.rsplit('.', 2)[0]
+        cidr = '/16'
+        ip_target_range = f"{network_id}.0.0{cidr}"
+
+        ping_replies = []
+        # Perform ping scan
+        try:
+            self.log.write(f"sending pings to all ip addresses in range {ip_target_range}", INFO)
+            ping_replies, ping_no_replies = sr(IP(dst=ip_target_range)/ICMP(), timeout=0, verbose=1)
+            print(ping_replies)
+            self.log.write(f"resulted in {len(ping_replies)} devices replying.", INFO)
+        except Exception as e:
+            self.log.write(f"Fault during ping scan: {e.__repr__()}", WARN)
+
+        ping_replies_ips = []
+        for sent, recieved in ping_replies:
+            ping_replies_ips.append(recieved.src)
+        return ping_replies_ips
 
     def extract_udp_payloads(self):
         udp_payloads = []
