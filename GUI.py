@@ -59,7 +59,7 @@ class MainWindow(QMainWindow):
             ["Naam", "IP-adres", "Firmware", "RDM UID", "Online"])  # Voorbeeld headers
         self.discovery_table_view.setModel(self.discovery_model)
 
-        # LAYOUT
+        # LAYOUT - create, add, main layout
         self.discovery_tab = QWidget()
         self.tab_widget.addTab(self.discovery_tab, "Discovery")
         main_layout = QHBoxLayout(self.discovery_tab)
@@ -124,6 +124,7 @@ class MainWindow(QMainWindow):
             PopupDialog(popup_msg)
             exit(1)
 
+        # fill listwidget
         for i in range(len(rdm_uids)):
             list_item = QListWidgetItem(f"{names[i]} -- RDM UID: {rdm_uids[i]}, Version: {versions[i]}")  # fixme
             fixture_selector.addItem(list_item)
@@ -135,11 +136,10 @@ class MainWindow(QMainWindow):
         font.setPointSize(20)
         self.status_elements_label.setFont(font)
 
-        # check_status_button kan lokaal zijn, de connectie wordt hier gemaakt.
         check_status_button = QPushButton("Log current status")
         check_status_button.clicked.connect(self._log_current_status_check)
 
-        # LAYOUT
+        # LAYOUT - create, add, main layout
         self.status_tab = QWidget()
         self.tab_widget.addTab(self.status_tab, "Status")
         main_layout = QHBoxLayout(self.status_tab)
@@ -158,7 +158,7 @@ class MainWindow(QMainWindow):
 
     def _save_current_selection(self, current, previous):
         if current and current != previous:
-            self.data_handler.selected_uid = current.text().split("RDM UID: ")[1]
+            self.data_handler.selected_uid = current.text().split(", Version")[0].split("RDM UID: ")[1]
             self.data_handler.selected_name = current.text().split("--")[0]
             self.history_msg_label.setText(f"Geselecteerd apparaat: {self.data_handler.selected_name}")
         else:
@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         self.lamp_hour_plot.setLabel('left', 'Aantal Lampuren')
         self.lamp_hour_plot.showGrid(x=True, y=True)
 
-        # LAYOUT
+        # LAYOUT - create, add, main layout
         self.history_tab = QWidget()
         self.tab_widget.addTab(self.history_tab, "History")
         main_layout = QVBoxLayout(self.history_tab)
