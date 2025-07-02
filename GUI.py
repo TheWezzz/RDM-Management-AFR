@@ -42,8 +42,7 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.tab_widget)
 
         self._create_discovery_tab()
-        self._create_status_tab()
-        self._create_history_tab()
+        self._create_fixture_tab()
 
     def _create_discovery_tab(self):
         discovery_button = QPushButton("Discovery")
@@ -77,7 +76,7 @@ class MainWindow(QMainWindow):
         # L
         self.discovery_tab.setLayout(main_layout)
 
-    def _create_status_tab(self):
+    def _create_fixture_tab(self):
         # TODO: convert to QTableView (Qtreeview's required methods do not match easily with the original data.
         #  RDM UID hopefully does not need to be split up anymore
         #  MVC consists of 3 major components that give a great advantage.
@@ -88,7 +87,81 @@ class MainWindow(QMainWindow):
         fixture_selector = QListWidget()
         rdm_uids = self.data_handler.get_all_rdm_uids()
 
-        try:  # TODO fix and check error printing in GUI in rest of the file
+        names, versions = self._gather_data(rdm_uids)
+
+        # fill listwidget
+        for i in range(len(rdm_uids)):
+            list_item = QListWidgetItem(f"{names[i]} -- RDM UID: {rdm_uids[i]}, Version: {versions[i]}")  # fixme
+            fixture_selector.addItem(list_item)
+        fixture_selector.currentItemChanged.connect(self._save_current_selection)
+        fixture_selector.currentItemChanged.connect(self._update_status_display)
+
+        # create status_tab
+        self.status_elements_label = QLabel("Selecteer een apparaat aan de linkerkant <br> om de status te bekijken.")
+        font = self.status_elements_label.font()
+        font.setPointSize(20)
+        self.status_elements_label.setFont(font)
+
+        check_status_button = QPushButton("Log current status")
+        check_status_button.clicked.connect(self._log_current_status_check)
+
+        # create history_tab
+        reload_button = QPushButton("Reload history data")
+        reload_button.clicked.connect(self._reload_history_data)
+
+        self._create_history_plots()
+
+        self.history_msg_label = QLabel("Selecteer een apparaat")
+
+        # LAYOUT - create, add, main layout
+        self.fixture_tab = QWidget()
+        self.tab_widget.addTab(self.fixture_tab, "Status")
+        main_layout = QHBoxLayout(self.fixture_tab)
+        # __
+        # | Linkerkant: Fixture Selector (ListWidget)
+        main_layout.addWidget(fixture_selector)
+        # |
+        # | Rechterkant
+        fixture_tab_widget = QTabWidget()
+        # | __
+        # | | LAYOUT - Tab 1:
+        self.status_tab = QWidget()
+        fixture_tab_widget.addTab(self.status_tab, "Fixture")
+        status_layout = QVBoxLayout()
+        # | |
+        # | | Last status
+        self.status_elements_label.setAlignment(Qt.AlignmentFlag.AlignTop)
+        status_layout.addWidget(self.status_elements_label)
+        status_layout.addWidget(check_status_button)
+        # | |
+        self.status_tab.setLayout(status_layout)
+        # | L
+        # | __
+        # | | LAYOUT - Tab 2:
+        self.history_tab = QWidget()
+        fixture_tab_widget.addTab(self.history_tab, "History")
+        history_layout = QVBoxLayout(self.history_tab)
+        # | |
+        # | | History
+        history_layout.addWidget(reload_button, alignment=Qt.AlignmentFlag.AlignCenter) # TODO convert all alignment lines to this
+        self.history_msg_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        history_layout.addWidget(self.history_msg_label)
+        # | |
+        graph_layout = QGridLayout(self.history_tab)
+        graph_layout.addWidget(self.usage_plot, 0, 0)
+        graph_layout.addWidget(self.lamp_hour_plot, 0, 1)
+        graph_layout.addWidget(self.firmware_plot, 1, 0)
+        history_layout.addLayout(graph_layout)
+        # | |
+        self.history_tab.setLayout(history_layout)
+        # | L
+        main_layout.addWidget(fixture_tab_widget)
+        # |
+        self.fixture_tab.setLayout(main_layout)
+        # L
+
+    def _gather_data(self, rdm_uids: list = None) -> tuple:
+        try:
             names = self.data_handler.get_names(rdm_uids)
         except ExceptionGroup as eGroup:
             # group of value errors with either no names found or fewer names than records, or uid error
@@ -125,38 +198,32 @@ class MainWindow(QMainWindow):
             PopupDialog(popup_msg)
             exit(1)
 
-        # fill listwidget
-        for i in range(len(rdm_uids)):
-            list_item = QListWidgetItem(f"{names[i]} -- RDM UID: {rdm_uids[i]}, Version: {versions[i]}")  # fixme
-            fixture_selector.addItem(list_item)
-        fixture_selector.currentItemChanged.connect(self._save_current_selection)
-        fixture_selector.currentItemChanged.connect(self._update_status_display)
+        return names, versions
 
-        # create status_tab
-        self.status_elements_label = QLabel("Selecteer een apparaat aan de linkerkant <br> om de status te bekijken.")
-        font = self.status_elements_label.font()
-        font.setPointSize(20)
-        self.status_elements_label.setFont(font)
+    def _create_history_plots(self):
+        self.usage_plot = pg.PlotWidget()
+        bottom_axis_usage = pg.AxisItem("bottom", pen="g", maxTickLength=10)
+        left_axis_usage = pg.AxisItem("left", pen="g")
+        self.usage_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
+        self.usage_plot.setLabel('bottom', 'Maand (1-12)')
+        self.usage_plot.setLabel('left', 'Aantal Log-entries')
+        self.usage_plot.showGrid(x=False, y=True)
 
-        check_status_button = QPushButton("Log current status")
-        check_status_button.clicked.connect(self._log_current_status_check)
+        self.lamp_hour_plot = pg.PlotWidget()
+        bottom_axis_hour = pg.DateAxisItem("bottom", pen="b")
+        left_axis_hour = pg.AxisItem("left", pen="b")
+        self.lamp_hour_plot.setAxisItems({"bottom": bottom_axis_hour, "left": left_axis_hour})
+        self.lamp_hour_plot.setLabel('bottom', 'Tijd')
+        self.lamp_hour_plot.setLabel('left', 'Aantal Lampuren')
+        self.lamp_hour_plot.showGrid(x=True, y=True)
 
-        # LAYOUT - create, add, main layout
-        self.status_tab = QWidget()
-        self.tab_widget.addTab(self.status_tab, "Status")
-        main_layout = QHBoxLayout(self.status_tab)
-
-        # Linkerkant: Fixture Selector (ListWidget)
-        main_layout.addWidget(fixture_selector)
-
-        # Rechterkant: Status Elementen
-        status_layout = QVBoxLayout()
-        self.status_elements_label.setAlignment(Qt.AlignmentFlag.AlignTop)
-        status_layout.addWidget(self.status_elements_label)
-        status_layout.addWidget(check_status_button)
-        main_layout.addLayout(status_layout)
-
-        self.status_tab.setLayout(main_layout)
+        self.firmware_plot = pg.PlotWidget()
+        bottom_axis_usage = pg.AxisItem("bottom", pen="y", maxTickLength=10)
+        left_axis_usage = pg.AxisItem("left", pen="g")
+        self.firmware_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
+        self.firmware_plot.setLabel('bottom', 'Tijd')
+        self.firmware_plot.setLabel('left', 'Firmware versie')
+        self.firmware_plot.showGrid(x=False, y=True)
 
     def _save_current_selection(self, current, previous):
         if current and current != previous:
@@ -180,53 +247,6 @@ class MainWindow(QMainWindow):
 
     def _log_current_status_check(self):
         pass
-
-    def _create_history_tab(self):
-        reload_button = QPushButton("Reload history data")
-        reload_button.clicked.connect(self._reload_history_data)
-
-        # selected_item_name = "Geen apparaat geselecteerd"
-        # if self.data_handler.selected_uid is not None:
-        #     name_tuple = self.data_handler.get_name(self.data_handler.selected_uid)
-        #     if name_tuple and name_tuple[0]:
-        #         selected_item_name = name_tuple[0]
-
-        self.history_msg_label = QLabel("Selecteer een apparaat")
-
-        # PLOT STYLE
-        self.usage_plot = pg.PlotWidget()
-        bottom_axis_usage = pg.AxisItem("bottom", pen="g", maxTickLength=10)
-        left_axis_usage = pg.AxisItem("left", pen="g")
-        self.usage_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
-        self.usage_plot.setLabel('bottom', 'Maand (1-12)')
-        self.usage_plot.setLabel('left', 'Aantal Log-entries')
-        self.usage_plot.showGrid(x=False, y=True)
-
-        self.lamp_hour_plot = pg.PlotWidget()
-        bottom_axis_hour = pg.DateAxisItem("bottom", pen="b")
-        left_axis_hour = pg.AxisItem("left", pen="b")
-        self.lamp_hour_plot.setAxisItems({"bottom": bottom_axis_hour, "left": left_axis_hour})
-        self.lamp_hour_plot.setLabel('bottom', 'Tijd')
-        self.lamp_hour_plot.setLabel('left', 'Aantal Lampuren')
-        self.lamp_hour_plot.showGrid(x=True, y=True)
-
-        # LAYOUT - create, add, main layout
-        self.history_tab = QWidget()
-        self.tab_widget.addTab(self.history_tab, "History")
-        main_layout = QVBoxLayout(self.history_tab)
-
-        # Top
-        main_layout.addWidget(reload_button, alignment=Qt.AlignmentFlag.AlignCenter)
-        self.history_msg_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        main_layout.addWidget(self.history_msg_label)
-
-        # Bottom
-        graph_layout = QGridLayout(self.history_tab)
-        graph_layout.addWidget(self.usage_plot, 0, 0)
-        graph_layout.addWidget(self.lamp_hour_plot, 0, 1)
-        main_layout.addLayout(graph_layout)
-
-        self.history_tab.setLayout(main_layout)
 
     def _reload_history_data(self):
         uid = self.data_handler.selected_uid
