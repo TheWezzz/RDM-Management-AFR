@@ -169,7 +169,7 @@ class RDM_logs:
             sorted_device_records = {key: records[key] for key in keylist}
             return sorted_device_records, INFO_SUCCESS
         else:
-            raise ValueError(f"UID {uid}: {ERR_NO_RDM_UID}")
+            raise ValueError(f"UID '{uid}': {ERR_NO_RDM_UID}")
 
     def get_latest_record(self, uid: rdm_uid) -> tuple[timestamp, device_record, None] | tuple[None, None, err_warn]:
         rec, err = self.get_device_records(uid)
