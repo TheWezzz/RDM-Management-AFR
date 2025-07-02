@@ -62,18 +62,19 @@ class MainWindow(QMainWindow):
         # LAYOUT - create, add, main layout
         self.discovery_tab = QWidget()
         self.tab_widget.addTab(self.discovery_tab, "Discovery")
-        main_layout = QHBoxLayout(self.discovery_tab)
 
-        # Linkerkant: Knop en Combobox
+        main_layout = QHBoxLayout(self.discovery_tab)
+        # |
+        # | Linkerkant: Knop en Combobox
         left_layout = QVBoxLayout()
         left_layout.addWidget(discovery_button)
         left_layout.addWidget(protocol_combo)
         left_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)  # Links uitlijnen
         main_layout.addLayout(left_layout)
-
-        # Rechterkant: Tabelview
+        # |
+        # | Rechterkant: Tabelview
         main_layout.addWidget(self.discovery_table_view)
-
+        # L
         self.discovery_tab.setLayout(main_layout)
 
     def _create_status_tab(self):
@@ -131,6 +132,7 @@ class MainWindow(QMainWindow):
         fixture_selector.currentItemChanged.connect(self._save_current_selection)
         fixture_selector.currentItemChanged.connect(self._update_status_display)
 
+        # create status_tab
         self.status_elements_label = QLabel("Selecteer een apparaat aan de linkerkant <br> om de status te bekijken.")
         font = self.status_elements_label.font()
         font.setPointSize(20)
@@ -232,7 +234,7 @@ class MainWindow(QMainWindow):
 
         # gather data
         time_history = []
-        monthly_usage_history = [0] * 12  # Correcte initialisatie voor 12 maanden
+        monthly_usage_history = [0] * 12  # initialisatie voor 12 maanden
         lamp_history = []
         try:
             device_records, uid_err = self.data_handler.get_device_records(uid)
