@@ -1,19 +1,22 @@
 import pyqtgraph as pg
+from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QWidget, QPushButton, QListWidget, QLabel, QVBoxLayout,
                              QHBoxLayout, QGridLayout, QListWidgetItem, QTabWidget)
-from PyQt6.QtCore import Qt
 
 from data import param_to_string, datetime_to_unix
 from logger import Logger, INFO, WARN, ERR
 
+
 def str_to_html(s: str) -> str:
     return s.replace("\n", "<br>")
+
 
 class FixtureTab(QWidget):
     def __init__(self, data_handler, parent=None):
         super().__init__(parent)
         self.data_handler = data_handler
-        self.log = Logger("C:/Users/Wesley/PycharmProjects/RDM Management/log", "FixtureTab") # Path is specific
+        self.log = Logger("C:/Users/Wesley/PycharmProjects/RDM Management/log",
+                          "GUI Window - Fixture tab")  # Path is specific
 
         # These need to be instance variables to be accessed by other methods
         self.status_elements_label = None

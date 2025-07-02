@@ -53,6 +53,7 @@ class PopupDialog(QDialog):
         # self.log.write(text)
         self.setWindowTitle("Something went wrong")
 
+        # top
         icon_pixmap = self.style().standardPixmap(QStyle.StandardPixmap.SP_MessageBoxWarning)
         icon_label = QLabel()
         icon_label.setPixmap(icon_pixmap)
@@ -62,11 +63,13 @@ class PopupDialog(QDialog):
 
         message = QLabel(str(text))
 
+        # bottom
         buttons = QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel
         self.buttonBox = QDialogButtonBox(buttons)
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
+        # --- LAYOUT ---
         layout = QVBoxLayout(self)
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_label)

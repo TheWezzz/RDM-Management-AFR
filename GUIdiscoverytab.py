@@ -9,7 +9,7 @@ class DiscoveryTab(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        # Create widgets
+        # Create widgets left
         discovery_button = QPushButton("Discovery")
         # discovery_button.clicked.connect(self._een_methode)
 
@@ -17,6 +17,7 @@ class DiscoveryTab(QWidget):
         protocol_combo.addItems(["sACN", "RDM", "NFC"])
         # protocol_combo.currentTextChanged.connect(self._een_andere_methode)
 
+        # Create widgets right
         self.discovery_table_view = QTableView()
         self.discovery_model = QStandardItemModel(0, 5)
         self.discovery_model.setHorizontalHeaderLabels(
