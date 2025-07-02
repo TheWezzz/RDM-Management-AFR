@@ -283,8 +283,6 @@ class MainWindow(QMainWindow):
             # plot lamp hours
             self.lamp_hour_plot.clear()
             if time_history and lamp_history:
-                self.lamp_hour_plot.setLabel('bottom', 'Tijd')  # Label voor de x-as
-                self.lamp_hour_plot.setLabel('left', 'Aantal Lampuren')  # Label voor de y-as
                 self.lamp_hour_plot.plot(time_history, lamp_history, pen='b')  # Teken de data: x, y, kleur blauw
             else:
                 self.lamp_hour_plot.addItem(pg.TextItem("No lamp hour data found"))
