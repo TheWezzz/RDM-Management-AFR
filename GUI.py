@@ -1,15 +1,13 @@
 import pyqtgraph as pg
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QStandardItemModel, QIcon, QPixmap
+from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QMainWindow,
     QTabWidget,
     QWidget,
     QPushButton,
-    QComboBox,
     QVBoxLayout,
     QHBoxLayout,
-    QTableView,
     QListWidget,
     QLabel,
     QGridLayout,
@@ -19,6 +17,7 @@ from PyQt6.QtWidgets import (
     QStyle, QApplication
 )
 
+from GUIdiscoverytab import DiscoveryTab
 from data import param_to_string, datetime_to_unix, RDM_logs
 from logger import Logger, INFO, WARN, ERR
 
@@ -42,39 +41,9 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         self.setCentralWidget(self.tab_widget)
 
-        self._create_discovery_tab()
+        discovery_tab = DiscoveryTab(self.data_handler)
+        self.tab_widget.addTab(discovery_tab, "Discovery")
         self._create_fixture_tab()
-
-    def _create_discovery_tab(self):
-        discovery_button = QPushButton("Discovery")
-        # discovery_button.clicked.connect(self._een_methode)
-
-        protocol_combo = QComboBox()
-        protocol_combo.addItems(["sACN", "RDM", "NFC"])
-        # protocol_combo.currentTextChanged.connect(self._een_andere_methode)
-
-        self.discovery_table_view = QTableView()
-        self.discovery_model = QStandardItemModel(0, 5)  # Initieel 0 rijen, 5 kolommen (aanpasbaar)
-        self.discovery_model.setHorizontalHeaderLabels(
-            ["Naam", "IP-adres", "Firmware", "RDM UID", "Online"])  # Voorbeeld headers
-        self.discovery_table_view.setModel(self.discovery_model)
-
-        # LAYOUT - create, add, main layout
-        self.discovery_tab = QWidget()
-        self.tab_widget.addTab(self.discovery_tab, "Discovery")
-
-        main_layout = QHBoxLayout(self.discovery_tab)
-        # |
-        # | Linkerkant: Knop en Combobox
-        left_layout = QVBoxLayout()
-        left_layout.addWidget(discovery_button)
-        left_layout.addWidget(protocol_combo)
-        left_layout.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)  # Links uitlijnen
-        main_layout.addLayout(left_layout)
-        # |
-        # | Rechterkant: Tabelview
-        main_layout.addWidget(self.discovery_table_view)
-        # L
 
     def _create_fixture_tab(self):
         # TODO: convert to QTableView (Qtreeview's required methods do not match easily with the original data.
@@ -141,7 +110,8 @@ class MainWindow(QMainWindow):
         history_layout = QVBoxLayout(self.history_tab)
         # | |
         # | | History
-        history_layout.addWidget(reload_button, alignment=Qt.AlignmentFlag.AlignCenter) # TODO convert all alignment lines to this
+        history_layout.addWidget(reload_button,
+                                 alignment=Qt.AlignmentFlag.AlignCenter)  # TODO convert all alignment lines to this
         self.history_msg_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         history_layout.addWidget(self.history_msg_label)
         # | |
