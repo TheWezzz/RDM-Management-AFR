@@ -1,17 +1,10 @@
-import pyqtgraph as pg
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QPixmap
 from PyQt6.QtWidgets import (
     QMainWindow,
     QTabWidget,
-    QWidget,
-    QPushButton,
     QVBoxLayout,
-    QHBoxLayout,
-    QListWidget,
     QLabel,
-    QGridLayout,
-    QListWidgetItem,
     QDialog,
     QDialogButtonBox,
     QStyle, QApplication
@@ -21,8 +14,8 @@ from FILENAMES import *
 from GUIdiscoverytab import DiscoveryTab
 from GUIfixturetab import FixtureTab
 from communication import CommunicationHandler
-from data import param_to_string, datetime_to_unix, RDM_logs
-from logger import Logger, INFO, WARN, ERR
+from data import RDM_logs
+from logger import Logger
 
 
 def str_to_html(s: str) -> str:
@@ -51,6 +44,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(discovery_tab, "Discovery")
         self.fixture_tab = FixtureTab(data_handler)
         self.tab_widget.addTab(self.fixture_tab, "Status")
+
 
 class PopupDialog(QDialog):
     def __init__(self, text, parent=None):

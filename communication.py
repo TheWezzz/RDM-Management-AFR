@@ -7,7 +7,6 @@ from scapy.all import (
     UDP,
     IP,
     ICMP,
-    sr,
     Ether,
     get_if_list)
 from scapy.layers.l2 import getmacbyip
@@ -35,7 +34,7 @@ def hex_to_str(h: str) -> str:
         return '<?>_HEX_ERR'
 
 
-def sniff_iface(interface, bpf_filter, function, timeout = None):
+def sniff_iface(interface, bpf_filter, function, timeout=None):
     try:
         # De sniff_iface functie.
         # `iface` specificeert de netwerkinterface.
@@ -142,29 +141,29 @@ class CommunicationHandler:
         sniff_iface(interface, bpf_filter, self.packet_callback)
 
     def packet_callback(self, packet):
-            # Controleer of het pakket een IP-laag en een UDP-laag heeft
-            if IP in packet and UDP in packet:
-                ip_layer = packet[IP]
-                udp_layer = packet[UDP]
+        # Controleer of het pakket een IP-laag en een UDP-laag heeft
+        if IP in packet and UDP in packet:
+            ip_layer = packet[IP]
+            udp_layer = packet[UDP]
 
-                # Haal de payload op (de data binnen het UDP pakket)
-                payload = udp_layer.payload
+            # Haal de payload op (de data binnen het UDP pakket)
+            payload = udp_layer.payload
 
-                # Converteer payload naar hex message, vergelijkbaar me t Wireshark
-                payload_hex = bytes(payload).hex()
+            # Converteer payload naar hex message, vergelijkbaar me t Wireshark
+            payload_hex = bytes(payload).hex()
 
-                print(f"--- Nieuw UDP Pakket Ontvangen ---")
-                print(f"Bron IP:       {ip_layer.src}")
-                print(f"Doel IP:       {ip_layer.dst}")
-                print(f"Bron Poort:    {udp_layer.sport}")
-                print(f"Doel Poort:    {udp_layer.dport}")
-                print(f"Payload Lengte:{len(payload)} bytes")
-                print(f"Payload (hex): {payload_hex}")
+            print(f"--- Nieuw UDP Pakket Ontvangen ---")
+            print(f"Bron IP:       {ip_layer.src}")
+            print(f"Doel IP:       {ip_layer.dst}")
+            print(f"Bron Poort:    {udp_layer.sport}")
+            print(f"Doel Poort:    {udp_layer.dport}")
+            print(f"Payload Lengte:{len(payload)} bytes")
+            print(f"Payload (hex): {payload_hex}")
 
-                # Hier kun je logica toevoegen om de payload_hex te analyseren
-                # Bijvoorbeeld, zoek naar specifieke RDM start codes of patronen
-                # if "5253" in payload_hex: # 'RS'
-                #     print("Mogelijk RDM discovery data gevonden!")
+            # Hier kun je logica toevoegen om de payload_hex te analyseren
+            # Bijvoorbeeld, zoek naar specifieke RDM start codes of patronen
+            # if "5253" in payload_hex: # 'RS'
+            #     print("Mogelijk RDM discovery data gevonden!")
 
     def find_devices_by_manufacturer(self, manuf_filter: str = None):
         """
@@ -192,9 +191,11 @@ class CommunicationHandler:
             replying_devices.append(dict({"ip address": ip, "mac address": mac, "manufacturer": manuf}))
 
         # print results
-        print(f"found {len(replying_devices)} device{'s' if len(replying_devices) > 1 else ''} on interface '{self.selected_interface}':")
+        print(f"found {len(replying_devices)} device{'s' if len(replying_devices) > 1 else ''}"
+              f"on interface '{self.selected_interface}':")
         for device in replying_devices:
-            print(f"-- ip address '{device["ip address"]}' with mac '{device["mac address"]}', manufacturer '{device['manufacturer']}' ")
+            print(f"-- ip address '{device["ip address"]}' with mac '{device["mac address"]}', "
+                  f"manufacturer '{device['manufacturer']}' ")
 
             # Apply the filter (if specified)
             if manuf_filter:
