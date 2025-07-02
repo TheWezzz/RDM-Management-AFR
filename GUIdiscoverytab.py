@@ -1,11 +1,15 @@
 from PyQt6.QtGui import QStandardItemModel
 from PyQt6.QtWidgets import QWidget, QPushButton, QComboBox, QVBoxLayout, QHBoxLayout, QTableView
 
+from FILENAMES import *
+from logger import Logger
+
 
 class DiscoveryTab(QWidget):
     def __init__(self, data_handler, parent=None):
         super().__init__(parent)
         self.data_handler = data_handler
+        self.log = Logger(LOGPATH, "GUI Window - Discovery tab")
         self._setup_ui()
 
     def _setup_ui(self):

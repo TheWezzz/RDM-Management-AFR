@@ -3,6 +3,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import (QWidget, QPushButton, QListWidget, QLabel, QVBoxLayout,
                              QHBoxLayout, QGridLayout, QListWidgetItem, QTabWidget)
 
+from FILENAMES import *
 from data import param_to_string, datetime_to_unix
 from logger import Logger, INFO, WARN, ERR
 
@@ -15,8 +16,7 @@ class FixtureTab(QWidget):
     def __init__(self, data_handler, parent=None):
         super().__init__(parent)
         self.data_handler = data_handler
-        self.log = Logger("C:/Users/Wesley/PycharmProjects/RDM Management/log",
-                          "GUI Window - Fixture tab")  # Path is specific
+        self.log = Logger(LOGPATH, "GUI Window - Fixture tab")  # Path is specific
 
         # These need to be instance variables to be accessed by other methods
         self.status_elements_label = None

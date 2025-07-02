@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
     QStyle, QApplication
 )
 
+from FILENAMES import *
 from GUIdiscoverytab import DiscoveryTab
 from GUIfixturetab import FixtureTab
 from communication import CommunicationHandler
@@ -31,7 +32,7 @@ def str_to_html(s: str) -> str:
 class MainWindow(QMainWindow):
     def __init__(self, data_handler: RDM_logs, com_handler: CommunicationHandler):  # Accepteer de RDM_logs instantie en com_handler als argumenten
         super().__init__()
-        self.log = Logger("C:/Users/Wesley/PycharmProjects/RDM Management/log", "GUI Window")
+        self.log = Logger(LOGPATH, "GUI Window")
         self.screensize = QApplication.primaryScreen().availableSize()
         self.setGeometry(100, 100, self.screensize.width() - 200, self.screensize.height() - 200)  # Groter startvenster
         self.setWindowTitle("RDM Management")
