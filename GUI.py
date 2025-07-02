@@ -16,7 +16,7 @@ from PyQt6.QtWidgets import (
     QListWidgetItem,
     QDialog,
     QDialogButtonBox,
-    QStyle
+    QStyle, QApplication
 )
 
 from data import param_to_string, datetime_to_unix, RDM_logs
@@ -31,7 +31,8 @@ class MainWindow(QMainWindow):
     def __init__(self, data_handler: RDM_logs):  # Accepteer de RDM_logs instantie als argument
         super().__init__()
         self.log = Logger("C:/Users/Wesley/PycharmProjects/RDM Management/log", "GUI Window")
-        self.setGeometry(100, 100, 1000, 600)  # Groter startvenster
+        self.screensize = QApplication.primaryScreen().availableSize()
+        self.setGeometry(100, 100, self.screensize.width() - 200, self.screensize.height() - 200)  # Groter startvenster
         self.setWindowTitle("RDM Management")
         logo_pixmap = QPixmap("RDMlogo.jpg")
         logo_icon = QIcon(logo_pixmap)
