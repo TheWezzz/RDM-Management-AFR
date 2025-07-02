@@ -75,7 +75,6 @@ class MainWindow(QMainWindow):
         # | Rechterkant: Tabelview
         main_layout.addWidget(self.discovery_table_view)
         # L
-        self.discovery_tab.setLayout(main_layout)
 
     def _create_fixture_tab(self):
         # TODO: convert to QTableView (Qtreeview's required methods do not match easily with the original data.
@@ -128,14 +127,12 @@ class MainWindow(QMainWindow):
         # | | LAYOUT - Tab 1:
         self.status_tab = QWidget()
         fixture_tab_widget.addTab(self.status_tab, "Fixture")
-        status_layout = QVBoxLayout()
+        status_layout = QVBoxLayout(self.status_tab)
         # | |
         # | | Last status
         self.status_elements_label.setAlignment(Qt.AlignmentFlag.AlignTop)
         status_layout.addWidget(self.status_elements_label)
         status_layout.addWidget(check_status_button)
-        # | |
-        self.status_tab.setLayout(status_layout)
         # | L
         # | __
         # | | LAYOUT - Tab 2:
@@ -153,12 +150,8 @@ class MainWindow(QMainWindow):
         graph_layout.addWidget(self.lamp_hour_plot, 0, 1)
         graph_layout.addWidget(self.firmware_plot, 1, 0)
         history_layout.addLayout(graph_layout)
-        # | |
-        self.history_tab.setLayout(history_layout)
         # | L
         main_layout.addWidget(fixture_tab_widget)
-        # |
-        self.fixture_tab.setLayout(main_layout)
         # L
 
     def _gather_data(self, rdm_uids: list = None) -> tuple:
@@ -323,11 +316,10 @@ class PopupDialog(QDialog):
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
 
-        layout = QVBoxLayout()
+        layout = QVBoxLayout(self)
         icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(icon_label)
         layout.addWidget(message)
         layout.addWidget(self.buttonBox)
-        self.setLayout(layout)
 
         self.exec()
