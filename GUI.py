@@ -34,8 +34,8 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(logo_icon)
 
         self.data_handler = data_handler  # Gebruik de meegegeven RDM_logs instantie
-        self.com_handler = com_handler
-        print("selected device(s): ", self.com_handler.selected_devices)
+        self.com_handler = com_handler # Gebruik de geconfigureerde CommunicationHandler
+        print("selected device(s): ", self.com_handler.selected_devices) # TODO Laat de geselecteerde devices zien in een tab
 
         self.tab_widget = QTabWidget()
         self.setCentralWidget(self.tab_widget)

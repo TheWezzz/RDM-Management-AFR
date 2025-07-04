@@ -42,7 +42,7 @@ class ConfigWindow(QMainWindow):
         self.mac_info_label = QLabel("No compatible Mac addresses found")
         self.mac_info_label.setVisible(False)
 
-        self.mac_combo_box = QComboBox()
+        self.mac_combo_box = QComboBox() # TODO change to checkboxlist with layout
         self.mac_combo_box.currentTextChanged.connect(self._start_mainwindow)
         self.mac_combo_box.setVisible(False)
 
@@ -80,4 +80,6 @@ class ConfigWindow(QMainWindow):
         self.com_handler_setup.selected_devices = [device]
         data = create_dummy_data()
         window = MainWindow(data, self.com_handler_setup)
-        window.show()
+        window.show() # TODO make sure new window shows
+
+    # TODO add popup while waiting for ip scan, and display available ip's (in scrollable area?)
