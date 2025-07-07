@@ -192,7 +192,7 @@ class CommunicationHandler:
 
         # print results
         print(f"found {len(replying_devices)} device{'s' if len(replying_devices) > 1 else ''}"
-              f"on interface '{self.selected_interface}':")
+              f" on interface '{self.selected_interface}':")
         for device in replying_devices:
             print(f"-- ip address '{device["ip address"]}' with mac '{device["mac address"]}', "
                   f"manufacturer '{device['manufacturer']}' ")

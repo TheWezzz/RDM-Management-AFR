@@ -8,11 +8,12 @@ from PyQt6.QtWidgets import (
     QLabel
 )
 
-from GUI import MainWindow
 from Dummy import create_dummy_data
+from FILENAMES import *
+from GUI import MainWindow
 from communication import CommunicationHandler
 from logger import Logger
-from FILENAMES import *
+
 
 def str_to_html(s: str) -> str:
     return s.replace("\n", "<br>")
@@ -42,8 +43,7 @@ class ConfigWindow(QMainWindow):
         self.mac_info_label = QLabel("No compatible Mac addresses found")
         self.mac_info_label.setVisible(False)
 
-        self.mac_combo_box = QComboBox() # TODO change to checkboxlist with layout
-        self.mac_combo_box.currentTextChanged.connect(self._start_mainwindow)
+        self.mac_combo_box = QComboBox()  # TODO change to checkboxlist with layout
         self.mac_combo_box.setVisible(False)
 
         # LAYOUT
@@ -68,18 +68,19 @@ class ConfigWindow(QMainWindow):
 
     def _init_mac_combo_box(self, iface):
         self.com_handler_setup.selected_interface = iface
-        devices = self.com_handler_setup.find_devices_by_manufacturer() # TODO notify user to wait
+        devices = self.com_handler_setup.find_devices_by_manufacturer()  # TODO notify user to wait
+        self.mac_info_label.setVisible(True)
         if devices:
             self.mac_info_label.setText("Select a device from the list")
             for dev in devices:
                 self.mac_combo_box.addItem(f"{dev["manufacturer"]}: {dev['ip address']}")
-            self.mac_info_label.setVisible(True)
+            self.mac_combo_box.currentTextChanged.connect(self._start_mainwindow)
             self.mac_combo_box.setVisible(True)
 
     def _start_mainwindow(self, device):
         self.com_handler_setup.selected_devices = [device]
         data = create_dummy_data()
-        window = MainWindow(data, self.com_handler_setup)
-        window.show() # TODO make sure new window shows
+        self.main_screen = MainWindow(data, self.com_handler_setup)
+        self.main_screen.show()  # TODO make sure new window shows
 
     # TODO add popup while waiting for ip scan, and display available ip's (in scrollable area?)
