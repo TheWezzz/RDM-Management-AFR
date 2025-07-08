@@ -38,7 +38,7 @@ class ConfigWindow(QMainWindow):
 
         iface_combo_box = QComboBox()
         iface_combo_box.addItems(list(self.com_handler_setup.available_interfaces.keys()))
-        iface_combo_box.currentTextChanged.connect(self._init_mac_combo_box)
+        iface_combo_box.currentTextChanged.connect(self._init_mac_selection_list)
 
         self.mac_info_label = QLabel("No compatible Mac addresses found")
         self.mac_info_label.setVisible(False)
@@ -47,9 +47,9 @@ class ConfigWindow(QMainWindow):
         self.mac_combo_box.setVisible(False)
 
         # LAYOUT
-        main_widget = QWidget()
-        self.setCentralWidget(main_widget)
-        layout = QVBoxLayout()
+        self.main_widget = QWidget()
+        self.setCentralWidget(self.main_widget)
+        main_layout = QVBoxLayout(self.main_widget)
 
         layout.addWidget(logo_label)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -57,16 +57,14 @@ class ConfigWindow(QMainWindow):
         layout.addWidget(iface_info_label)
         iface_info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        layout.addWidget(iface_combo_box)
+        main_layout.addWidget(iface_combo_box)
 
         layout.addWidget(self.mac_info_label)
         self.mac_info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         layout.addWidget(self.mac_combo_box)
 
-        main_widget.setLayout(layout)
-
-    def _init_mac_combo_box(self, iface):
+    def _init_mac_selection_list(self, iface):
         self.com_handler_setup.selected_interface = iface
         devices = self.com_handler_setup.find_devices_by_manufacturer()  # TODO notify user to wait
         self.mac_info_label.setVisible(True)
