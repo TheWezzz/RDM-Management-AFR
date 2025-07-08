@@ -197,12 +197,16 @@ class FixtureTab(QWidget):
 
     def _reload_history_data(self):
         uid = self.data_handler.selected_uid
+        last_fw_version = "v0"
+        virtual_fw_version = 0
+
         self.log.write(f"Reloading history data for {uid}", INFO)
 
         # gather data
         time_history = []
         monthly_usage_history = [0] * 12  # initialisatie voor 12 maanden
         lamp_history = []
+        firmware_history = {}
         try:
             device_records, uid_err = self.data_handler.get_device_records(uid)
         except ValueError as e:
@@ -215,6 +219,7 @@ class FixtureTab(QWidget):
             self.log.write(uid_err, WARN)
         message = ""
         if device_records:
+            # TODO: make get functions in data for lamp hours, usage per month and firmware version, all preferably returning dictionaries
             for timestamp in device_records:
                 unix_time, time_err = datetime_to_unix(timestamp)
                 if unix_time == 0:  # TODO convert to normal raise exception
@@ -226,6 +231,11 @@ class FixtureTab(QWidget):
                 if 'lamp_hours' in device_records[timestamp]:
                     time_history.append(unix_time)
                     lamp_history.append(device_records[timestamp]['lamp_hours'])
+
+                if last_fw_version != device_records[timestamp]["firmware_version"]:
+                    virtual_fw_version += 1
+                    firmware_history[unix_time] = virtual_fw_version
+                    last_fw_version = device_records[timestamp]["firmware_version"]
 
             # plot usage
             usage_bars = pg.BarGraphItem(x=range(1, 13), height=list(monthly_usage_history), width=0.6, brush='g')
@@ -239,6 +249,13 @@ class FixtureTab(QWidget):
                 self.lamp_hour_plot.plot(time_history, lamp_history, pen='b')  # Teken de data: x, y, kleur blauw
             else:
                 self.lamp_hour_plot.addItem(pg.TextItem("No lamp hour data found"))
+
+            # plot firmware history (WERKT NU NIET)
+            self.firmware_plot.clear()
+            if firmware_history:
+                self.firmware_plot.plot(list(firmware_history.keys()), list(firmware_history.values()), pen=None, symbol='t1')  # Teken de data: x, y, kleur geel
+            else:
+                self.lamp_hour_plot.addItem(pg.TextItem("No firmware data found"))
 
         else:
             message += f"ERROR:    UID: {uid}: NO HISTORY FOUND\n"
