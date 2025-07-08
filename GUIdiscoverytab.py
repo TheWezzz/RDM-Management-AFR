@@ -15,10 +15,10 @@ class DiscoveryTab(QWidget):
     def _setup_ui(self):
         # Create widgets left
         discovery_button = QPushButton("Discovery")
-        # discovery_button.clicked.connect(self._een_methode)
+        discovery_button.clicked.connect(self._scan_network)
 
         protocol_combo = QComboBox()
-        protocol_combo.addItems(["sACN", "RDM", "NFC"])
+        protocol_combo.addItems(["Network Search"])
         # protocol_combo.currentTextChanged.connect(self._een_andere_methode)
 
         # Create widgets right
@@ -45,3 +45,6 @@ class DiscoveryTab(QWidget):
 
         main_layout.addLayout(left_layout, 1)  # Add left layout with a stretch factor of 1
         main_layout.addLayout(right_layout, 4)  # Add right layout with a stretch factor of 4 (takes more space)
+
+    def _scan_network(self):
+        pass
