@@ -109,9 +109,10 @@ class FixtureTab(QWidget):
 
     def _create_history_plots(self):
         self.usage_plot = pg.PlotWidget()
-        bottom_axis_usage = pg.AxisItem("bottom", pen="g", maxTickLength=10)
+        bottom_axis_usage = pg.AxisItem("bottom", pen="g")
         left_axis_usage = pg.AxisItem("left", pen="g")
         self.usage_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
+        self.usage_plot.setMouseEnabled(False, False)
         self.usage_plot.setLabel('bottom', 'Maand (1-12)')
         self.usage_plot.setLabel('left', 'Aantal Log-entries')
         self.usage_plot.showGrid(x=False, y=True)
@@ -120,6 +121,7 @@ class FixtureTab(QWidget):
         bottom_axis_hour = pg.DateAxisItem("bottom", pen="b")
         left_axis_hour = pg.AxisItem("left", pen="b")
         self.lamp_hour_plot.setAxisItems({"bottom": bottom_axis_hour, "left": left_axis_hour})
+        self.lamp_hour_plot.setMouseEnabled(True, True)
         self.lamp_hour_plot.setLabel('bottom', 'Tijd')
         self.lamp_hour_plot.setLabel('left', 'Aantal Lampuren')
         self.lamp_hour_plot.showGrid(x=True, y=True)
@@ -128,6 +130,7 @@ class FixtureTab(QWidget):
         bottom_axis_usage = pg.DateAxisItem("bottom", pen="y")
         left_axis_usage = pg.AxisItem("left", pen="y")
         self.firmware_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
+        self.firmware_plot.setMouseEnabled(True, False)
         self.firmware_plot.setLabel('bottom', 'Tijd')
         self.firmware_plot.setLabel('left', 'Firmware versie')
         self.firmware_plot.showGrid(x=False, y=True)
@@ -230,7 +233,7 @@ class FixtureTab(QWidget):
                 monthly_usage_history[timestamp.month - 1] += 1
 
                 if 'lamp_hours' in device_records[timestamp]:
-                # gather lamp hours by adding them to a list with corresponding unix time
+                    # gather lamp hours by adding them to a list with corresponding unix time
                     time_history.append(unix_time)
                     lamp_history.append(device_records[timestamp]['lamp_hours'])
 
@@ -249,16 +252,18 @@ class FixtureTab(QWidget):
             # plot lamp hours
             self.lamp_hour_plot.clear()
             if time_history and lamp_history:
-                self.lamp_hour_plot.plot(time_history, lamp_history, pen='b')  # Teken de data: x, y, kleur blauw
+                self.lamp_hour_plot.plot(time_history, lamp_history, pen=(0, 100, 255), brush=(0, 0, 255, 100),
+                                         fillLevel=0)
             else:
                 self.lamp_hour_plot.addItem(pg.TextItem("No lamp hour data found"))
 
             # plot firmware history (WERKT NU NIET)
             self.firmware_plot.clear()
             if firmware_history:
-                self.firmware_plot.plot(list(firmware_history.keys()), list(firmware_history.values()), pen=None, symbol='t1')  # Teken de data: x, y, kleur geel
+                self.firmware_plot.plot(list(firmware_history.keys()), list(firmware_history.values()), pen=None,
+                                        symbol='t1')  # Teken de data: x, y, kleur geel
             else:
-                self.lamp_hour_plot.addItem(pg.TextItem("No firmware data found"))
+                self.firmware_plot.addItem(pg.TextItem("No firmware data found"))
 
         else:
             message += f"ERROR:    UID: {uid}: NO HISTORY FOUND\n"
