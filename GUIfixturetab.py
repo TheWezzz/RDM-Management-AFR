@@ -232,8 +232,8 @@ class FixtureTab(QWidget):
                 # gather usage history by incrementing the corresponding month count in the array
                 monthly_usage_history[timestamp.month - 1] += 1
 
+                # gather lamp hours by adding them to a list with corresponding unix time
                 if 'lamp_hours' in device_records[timestamp]:
-                    # gather lamp hours by adding them to a list with corresponding unix time
                     time_history.append(unix_time)
                     lamp_history.append(device_records[timestamp]['lamp_hours'])
 
@@ -257,11 +257,11 @@ class FixtureTab(QWidget):
             else:
                 self.lamp_hour_plot.addItem(pg.TextItem("No lamp hour data found"))
 
-            # plot firmware history (WERKT NU NIET)
+            # plot firmware history
             self.firmware_plot.clear()
             if firmware_history:
                 self.firmware_plot.plot(list(firmware_history.keys()), list(firmware_history.values()), pen=None,
-                                        symbol='t1')  # Teken de data: x, y, kleur geel
+                                        symbol='t1')
             else:
                 self.firmware_plot.addItem(pg.TextItem("No firmware data found"))
 
