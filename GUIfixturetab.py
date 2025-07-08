@@ -107,6 +107,31 @@ class FixtureTab(QWidget):
         main_layout.addWidget(fixture_tab_widget)
         # L
 
+    def _create_history_plots(self):
+        self.usage_plot = pg.PlotWidget()
+        bottom_axis_usage = pg.AxisItem("bottom", pen="g", maxTickLength=10)
+        left_axis_usage = pg.AxisItem("left", pen="g")
+        self.usage_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
+        self.usage_plot.setLabel('bottom', 'Maand (1-12)')
+        self.usage_plot.setLabel('left', 'Aantal Log-entries')
+        self.usage_plot.showGrid(x=False, y=True)
+
+        self.lamp_hour_plot = pg.PlotWidget()
+        bottom_axis_hour = pg.DateAxisItem("bottom", pen="b")
+        left_axis_hour = pg.AxisItem("left", pen="b")
+        self.lamp_hour_plot.setAxisItems({"bottom": bottom_axis_hour, "left": left_axis_hour})
+        self.lamp_hour_plot.setLabel('bottom', 'Tijd')
+        self.lamp_hour_plot.setLabel('left', 'Aantal Lampuren')
+        self.lamp_hour_plot.showGrid(x=True, y=True)
+
+        self.firmware_plot = pg.PlotWidget()
+        bottom_axis_usage = pg.DateAxisItem("bottom", pen="y")
+        left_axis_usage = pg.AxisItem("left", pen="y")
+        self.firmware_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
+        self.firmware_plot.setLabel('bottom', 'Tijd')
+        self.firmware_plot.setLabel('left', 'Firmware versie')
+        self.firmware_plot.showGrid(x=False, y=True)
+
     def _gather_data(self, rdm_uids: list = None) -> tuple:
         try:
             names = self.data_handler.get_names(rdm_uids)
@@ -146,31 +171,6 @@ class FixtureTab(QWidget):
             exit(1)
 
         return names, versions
-
-    def _create_history_plots(self):
-        self.usage_plot = pg.PlotWidget()
-        bottom_axis_usage = pg.AxisItem("bottom", pen="g", maxTickLength=10)
-        left_axis_usage = pg.AxisItem("left", pen="g")
-        self.usage_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
-        self.usage_plot.setLabel('bottom', 'Maand (1-12)')
-        self.usage_plot.setLabel('left', 'Aantal Log-entries')
-        self.usage_plot.showGrid(x=False, y=True)
-
-        self.lamp_hour_plot = pg.PlotWidget()
-        bottom_axis_hour = pg.DateAxisItem("bottom", pen="b")
-        left_axis_hour = pg.AxisItem("left", pen="b")
-        self.lamp_hour_plot.setAxisItems({"bottom": bottom_axis_hour, "left": left_axis_hour})
-        self.lamp_hour_plot.setLabel('bottom', 'Tijd')
-        self.lamp_hour_plot.setLabel('left', 'Aantal Lampuren')
-        self.lamp_hour_plot.showGrid(x=True, y=True)
-
-        self.firmware_plot = pg.PlotWidget()
-        bottom_axis_usage = pg.AxisItem("bottom", pen="y", maxTickLength=10)
-        left_axis_usage = pg.AxisItem("left", pen="y")
-        self.firmware_plot.setAxisItems({"bottom": bottom_axis_usage, "left": left_axis_usage})
-        self.firmware_plot.setLabel('bottom', 'Tijd')
-        self.firmware_plot.setLabel('left', 'Firmware versie')
-        self.firmware_plot.showGrid(x=False, y=True)
 
     def _save_current_selection(self, current, previous):
         if current and current != previous:
