@@ -226,12 +226,15 @@ class FixtureTab(QWidget):
                     message += f"ERROR:    UID: {uid} AT TIMESTAMP: {timestamp}: {time_err}\n"
                     continue
 
+                # gather usage history by incrementing the corresponding month count in the array
                 monthly_usage_history[timestamp.month - 1] += 1
 
                 if 'lamp_hours' in device_records[timestamp]:
+                # gather lamp hours by adding them to a list with corresponding unix time
                     time_history.append(unix_time)
                     lamp_history.append(device_records[timestamp]['lamp_hours'])
 
+                # gather firmware history by adding changes in version to a list with corresponding unix time
                 if last_fw_version != device_records[timestamp]["firmware_version"]:
                     virtual_fw_version += 1
                     firmware_history[unix_time] = virtual_fw_version
