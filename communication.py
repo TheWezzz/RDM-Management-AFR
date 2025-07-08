@@ -197,9 +197,11 @@ class CommunicationHandler:
             print(f"-- ip address '{device["ip address"]}' with mac '{device["mac address"]}', "
                   f"manufacturer '{device['manufacturer']}' ")
 
-            # Apply the filter (if specified)
             if manuf_filter:
-                if manuf_filter.lower() not in device["manufacturer"].lower():
+                # skip when filter text is not found in device manufacturer
+                if (manuf_filter.lower() not in device["manufacturer"].lower() or
+                        # skip when device manufacturer is already added to selected devices
+                        device["manufacturer"] in self.selected_devices):
                     continue
             self.selected_devices.append(device)
 
