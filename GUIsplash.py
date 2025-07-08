@@ -27,14 +27,20 @@ class ConfigWindow(QMainWindow):
         self.log = Logger(LOGPATH, "Config Window")
         self.setFixedSize(500, 300)
         self.setWindowTitle("RDM Management Configuration")
-        logo_pixmap = QPixmap("RDMlogo.jpg")
-        logo_icon = QIcon(logo_pixmap)
+        self.logo_pixmap = QPixmap("RDMlogo.jpg")
+        logo_icon = QIcon(self.logo_pixmap)
         self.setWindowIcon(logo_icon)
 
         self.com_handler_setup = CommunicationHandler(JSONPATH, LOGPATH)
 
+        self.main_widget = QWidget()
+        self.setCentralWidget(self.main_widget)
+
+        self._setup_ui()
+
+    def _setup_ui(self):
         logo_label = QLabel()
-        logo_label.setPixmap(logo_pixmap)
+        logo_label.setPixmap(self.logo_pixmap)
 
         iface_info_label = QLabel("Select an interface to connect to dmXLAN")
 
@@ -49,8 +55,6 @@ class ConfigWindow(QMainWindow):
         self.mac_selection_list.setVisible(False) # hide at creation untill interface is selected
 
         # LAYOUT
-        self.main_widget = QWidget()
-        self.setCentralWidget(self.main_widget)
         main_layout = QVBoxLayout(self.main_widget)
 
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
