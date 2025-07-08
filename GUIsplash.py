@@ -7,7 +7,8 @@ from PyQt6.QtWidgets import (
     QVBoxLayout,
     QLabel,
     QScrollArea,
-    QCheckBox
+    QCheckBox,
+    QPushButton
 )
 
 from Dummy import create_dummy_data
@@ -39,6 +40,7 @@ class ConfigWindow(QMainWindow):
         self._setup_ui()
 
     def _setup_ui(self):
+        # create top widgets
         logo_label = QLabel()
         logo_label.setPixmap(self.logo_pixmap)
 
@@ -46,13 +48,18 @@ class ConfigWindow(QMainWindow):
 
         iface_combo_box = QComboBox()
         iface_combo_box.addItems(list(self.com_handler_setup.available_interfaces.keys()))
-        iface_combo_box.currentTextChanged.connect(self._init_mac_selection_list)
+        iface_combo_box.textActivated.connect(self._init_mac_selection_list)
 
+        # create lower widgets (invisible till iface_combo_box is activated)
         self.mac_info_label = QLabel("No compatible Mac addresses found")
         self.mac_info_label.setVisible(False)
 
         self.mac_selection_list = QScrollArea()  # widget for scroll area
         self.mac_selection_list.setVisible(False) # hide at creation untill interface is selected
+
+        self.scan_button = QPushButton("Scan")
+        self.scan_button.clicked.connect(self._init_mac_selection_list)
+        self.scan_button.setVisible(False)
 
         # LAYOUT
         main_layout = QVBoxLayout(self.main_widget)
@@ -74,19 +81,24 @@ class ConfigWindow(QMainWindow):
         self.mac_selection_list.setWidgetResizable(True)
         main_layout.addWidget(self.mac_selection_list)
 
-    def _init_mac_selection_list(self, iface):
+        main_layout.addWidget(self.scan_button)
+
+    def _init_mac_selection_list(self, iface=None):
         """
         - save selected interface and search for devices on that interface
+        - show mac info label
         - create a new scroll layout, to update the mac_selection_list, and link layout to scroll area widget
         - fill the scroll layout with checkboxes containing the device description, and link widget to QScrollArea
-        - show mac info label and mac selection list
+        - show mac selection list
+        - show scan button
 
         @:param iface: the selected interface from interface combobox
         @:return None
         """
-        self.com_handler_setup.selected_interface = iface
+        self.com_handler_setup.selected_interface = iface if iface else self.com_handler_setup.selected_interface
         devices = self.com_handler_setup.find_devices_by_manufacturer()  # TODO notify user to wait
         self.mac_info_label.setVisible(True)
+
         self.scroll_layout = QVBoxLayout()
         self.scroll_area.setLayout(self.scroll_layout)
         if devices:
@@ -95,6 +107,8 @@ class ConfigWindow(QMainWindow):
                 self.scroll_layout.addWidget(QCheckBox(f"{dev["manufacturer"]}: {dev['ip address']}"))
             self.mac_selection_list.setWidget(self.scroll_area)
             self.mac_selection_list.setVisible(True)
+
+        self.scan_button.setVisible(True)
 
     def _start_mainwindow(self, device):
         self.com_handler_setup.selected_devices = [device]

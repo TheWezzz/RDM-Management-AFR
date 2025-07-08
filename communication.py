@@ -122,7 +122,7 @@ class CommunicationHandler:
 
     def sniff_artnet(self, interface):
         self.log.write(f"Sniffing for ARTNET on interface '{interface.description}'")
-        sniff_iface(interface, "udp port 6454", self.add_ip_from_packet, 5)
+        sniff_iface(interface, "udp port 6454", self.add_ip_from_packet, 3)
         return self.available_ips
 
     def add_ip_from_packet(self, packet):
