@@ -5,7 +5,9 @@ from PyQt6.QtWidgets import (
     QWidget,
     QComboBox,
     QVBoxLayout,
-    QLabel
+    QLabel,
+    QScrollArea,
+    QCheckBox
 )
 
 from Dummy import create_dummy_data
@@ -43,37 +45,52 @@ class ConfigWindow(QMainWindow):
         self.mac_info_label = QLabel("No compatible Mac addresses found")
         self.mac_info_label.setVisible(False)
 
-        self.mac_combo_box = QComboBox()  # TODO change to checkboxlist with layout
-        self.mac_combo_box.setVisible(False)
+        self.mac_selection_list = QScrollArea()  # widget for scroll area
+        self.mac_selection_list.setVisible(False) # hide at creation untill interface is selected
 
         # LAYOUT
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
         main_layout = QVBoxLayout(self.main_widget)
 
-        layout.addWidget(logo_label)
         logo_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(logo_label)
 
-        layout.addWidget(iface_info_label)
         iface_info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(iface_info_label)
 
         main_layout.addWidget(iface_combo_box)
 
-        layout.addWidget(self.mac_info_label)
         self.mac_info_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        main_layout.addWidget(self.mac_info_label)
 
-        layout.addWidget(self.mac_combo_box)
+        self.scroll_area = QWidget()
+        self.mac_selection_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.mac_selection_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.mac_selection_list.setWidgetResizable(True)
+        main_layout.addWidget(self.mac_selection_list)
 
     def _init_mac_selection_list(self, iface):
+        """
+        - save selected interface and search for devices on that interface
+        - create a new scroll layout, to update the mac_selection_list, and link layout to scroll area widget
+        - fill the scroll layout with checkboxes containing the device description, and link widget to QScrollArea
+        - show mac info label and mac selection list
+
+        @:param iface: the selected interface from interface combobox
+        @:return None
+        """
         self.com_handler_setup.selected_interface = iface
         devices = self.com_handler_setup.find_devices_by_manufacturer()  # TODO notify user to wait
         self.mac_info_label.setVisible(True)
+        self.scroll_layout = QVBoxLayout()
+        self.scroll_area.setLayout(self.scroll_layout)
         if devices:
             self.mac_info_label.setText("Select a device from the list")
             for dev in devices:
-                self.mac_combo_box.addItem(f"{dev["manufacturer"]}: {dev['ip address']}")
-            self.mac_combo_box.currentTextChanged.connect(self._start_mainwindow)
-            self.mac_combo_box.setVisible(True)
+                self.scroll_layout.addWidget(QCheckBox(f"{dev["manufacturer"]}: {dev['ip address']}"))
+            self.mac_selection_list.setWidget(self.scroll_area)
+            self.mac_selection_list.setVisible(True)
 
     def _start_mainwindow(self, device):
         self.com_handler_setup.selected_devices = [device]
