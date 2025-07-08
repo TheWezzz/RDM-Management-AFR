@@ -36,14 +36,14 @@ def create_dummy_data():
                             sens={'voltage': 230, 'temperature': 31 + random.randint(1, 50)}, err=[""],
                             hours=240 + i * 30 + random.randint(-15, 15))
 
-    for i in range(1, 5000):
-        sn = random.randint(1, 10)
-        dummy_data.add_data(uid=f'89AB:CDEF-{sn}', time=(datetime.datetime(2022, 1, 1,
-                                                                           random.randint(0, 23), 00, 00) +
-                                                         datetime.timedelta(days=i * 4 + random.randint(-2, 2))),
-                            mftr='Robe', name='Megapointe', fw_vs='v1.11',
-                            sens={'temperature': 52 + random.randint(1, 30), 'humidity': 80, 'voltage': 230}, err=[""],
-                            hours=57 + i * 20 + random.randint(-8, 8))
+    for sn in range(1, 10):
+        for i in range(1, 500):
+            dummy_data.add_data(uid=f'89AB:CDEF-{sn}', time=(datetime.datetime(2022, 1, 1,
+                                                                               random.randint(0, 23), 00, 00) +
+                                                             datetime.timedelta(days=i * 8 + random.randint(-4, 4))),
+                                mftr='Robe', name='Megapointe', fw_vs=f'v1.1.0.{i//10 + 1}',
+                                sens={'temperature': 52 + random.randint(1, 30), 'humidity': 80, 'voltage': 230}, err=[""],
+                                hours=57 + i * 20 + random.randint(-8, 8))
     # Color Strike m_____________________________________________________________________________________________
     dummy_data.add_data(uid='0123:4568', time=datetime.datetime(225, 5, 4,
                                                                 20, 00, 00),
