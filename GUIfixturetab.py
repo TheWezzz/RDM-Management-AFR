@@ -55,8 +55,7 @@ class FixtureTab(QWidget):
         font.setPointSize(16)
         self.status_elements_label.setFont(font)
 
-        check_status_button = QPushButton("Log current status")
-        check_status_button.clicked.connect(self._log_current_status_check)
+        status_message_label = QLabel("select fixture on the left to check last known data")
 
         # create widgets right - Tab 2
         reload_button = QPushButton("Reload history data")
@@ -84,7 +83,7 @@ class FixtureTab(QWidget):
         # | | Last status
         self.status_elements_label.setAlignment(Qt.AlignmentFlag.AlignTop)
         status_layout.addWidget(self.status_elements_label)
-        status_layout.addWidget(check_status_button)
+        status_layout.addWidget(status_message_label)
         # | L
         # | __
         # | | LAYOUT - Tab 2:
@@ -194,9 +193,6 @@ class FixtureTab(QWidget):
                                                f"{param_to_string(parameters, "<i>", "- ", "<br>")}")
         else:
             self.status_elements_label.setText(err)
-
-    def _log_current_status_check(self):
-        pass
 
     def _reload_history_data(self):
         uid = self.data_handler.selected_uid
