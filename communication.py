@@ -121,7 +121,7 @@ class CommunicationHandler:
             return packet_data
 
     def sniff_artnet(self, interface):
-        self.log.write(f"Sniffing for ARTNET on interface '{interface.description}'")
+        self.log.write(f"Sniffing for ARTNET on interface '{interface.description}'", INFO)
         sniff_iface(interface, "udp port 6454", self.add_ip_from_packet, 5)
         return self.available_ips
 

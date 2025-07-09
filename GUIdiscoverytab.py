@@ -25,13 +25,13 @@ class DiscoveryTab(QWidget):
         self.discovery_table_view = QTableView()
         self.discovery_model = QStandardItemModel(0, 5)
         self.discovery_model.setHorizontalHeaderLabels(
-            ["Naam", "IP-adres", "Firmware", "RDM UID", "Online"]
+            ["Naam", "IP-adres", "Firmware", "RDM UID"]
         )
         self.discovery_table_view.setModel(self.discovery_model)
 
         # --- LAYOUT ---
         # Main layout for this tab
-        main_layout = QHBoxLayout(self)  # Set the layout directly on the widget
+        main_layout = QHBoxLayout(self)
 
         # Left side: Button and Combobox
         left_layout = QVBoxLayout()
