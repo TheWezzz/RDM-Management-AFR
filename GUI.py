@@ -40,7 +40,7 @@ class MainWindow(QMainWindow):
         self.tab_widget = QTabWidget()
         self.setCentralWidget(self.tab_widget)
 
-        discovery_tab = DiscoveryTab(data_handler)
+        discovery_tab = DiscoveryTab(com_handler)
         self.tab_widget.addTab(discovery_tab, "Discovery")
         self.fixture_tab = FixtureTab(data_handler)
         self.tab_widget.addTab(self.fixture_tab, "Status")

@@ -6,9 +6,9 @@ from logger import Logger
 
 
 class DiscoveryTab(QWidget):
-    def __init__(self, data_handler, parent=None):
+    def __init__(self, com_handler, parent=None):
         super().__init__(parent)
-        self.data_handler = data_handler
+        self.com_handler = com_handler
         self.log = Logger(LOGPATH, "GUI Window - Discovery tab")
         self._setup_ui()
 
@@ -23,7 +23,7 @@ class DiscoveryTab(QWidget):
 
         # Create widgets right
         self.discovery_table_view = QTableView()
-        self.discovery_model = QStandardItemModel(0, 5)
+        self.discovery_model = QStandardItemModel(0, 4)
         self.discovery_model.setHorizontalHeaderLabels(
             ["Naam", "IP-adres", "Firmware", "RDM UID"]
         )
