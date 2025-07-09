@@ -26,7 +26,7 @@ class Logger:
             raise LogError("there are still log messages in the buffer,"
                            "please call write_buffer before writing another log message")
         tm = datetime.datetime.now()
-        tab = " " * max(0, 30 - len(severity) - len(self.origin))
+        tab = " " * max(0, 35 - len(severity) - len(self.origin))
         msg = f"[{tm}] {severity} from {self.origin}: {tab}{message.upper() if severity in [ERR, CRIT] else message}"
 
         if self.print_console:
