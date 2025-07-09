@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import (
     QWidget,
     QComboBox,
     QVBoxLayout,
+    QHBoxLayout,
     QLabel,
     QScrollArea,
     QCheckBox,
@@ -21,6 +22,10 @@ from logger import Logger
 def str_to_html(s: str) -> str:
     return s.replace("\n", "<br>")
 
+class CustomIDCheckbox(QCheckBox):
+    def __init__(self, device):
+        super().__init__(text=f"{device["manufacturer"]}: {device["ip address"]}")
+        self.device = device
 
 class ConfigWindow(QMainWindow):
     def __init__(self):
@@ -33,7 +38,7 @@ class ConfigWindow(QMainWindow):
         self.setWindowIcon(logo_icon)
 
         self.com_handler_setup = CommunicationHandler(JSONPATH, LOGPATH)
-
+        self.checkboxlist = []
         self.main_widget = QWidget()
         self.setCentralWidget(self.main_widget)
 
@@ -61,6 +66,10 @@ class ConfigWindow(QMainWindow):
         self.scan_button.clicked.connect(self._init_mac_selection_list)
         self.scan_button.setVisible(False)
 
+        self.start_button = QPushButton("Start")
+        self.start_button.clicked.connect(self._start_mainwindow)
+        self.start_button.setVisible(False)
+
         # LAYOUT
         main_layout = QVBoxLayout(self.main_widget)
 
@@ -81,7 +90,10 @@ class ConfigWindow(QMainWindow):
         self.mac_selection_list.setWidgetResizable(True)
         main_layout.addWidget(self.mac_selection_list)
 
-        main_layout.addWidget(self.scan_button)
+        button_layout = QHBoxLayout()
+        button_layout.addWidget(self.scan_button)
+        button_layout.addWidget(self.start_button)
+        main_layout.addLayout(button_layout)
 
     def _init_mac_selection_list(self, iface=None):
         """
@@ -104,14 +116,20 @@ class ConfigWindow(QMainWindow):
         if devices:
             self.mac_info_label.setText("Select a device from the list")
             for dev in devices:
-                self.scroll_layout.addWidget(QCheckBox(f"{dev["manufacturer"]}: {dev['ip address']}"))
+                check = CustomIDCheckbox(dev)
+                self.scroll_layout.addWidget(check)
+                self.checkboxlist.append(check)
             self.mac_selection_list.setWidget(self.scroll_area)
             self.mac_selection_list.setVisible(True)
 
         self.scan_button.setVisible(True)
+        self.start_button.setVisible(True)
 
-    def _start_mainwindow(self, device):
-        self.com_handler_setup.selected_devices = [device]
+    def _start_mainwindow(self):
+        for check in self.checkboxlist:
+            if check.isChecked():
+                self.com_handler_setup.selected_devices.append(check.device)
+        # self.com_handler_setup.selected_devices =
         data = create_dummy_data()
         self.main_screen = MainWindow(data, self.com_handler_setup)
         self.main_screen.show()  # TODO make sure new window shows
