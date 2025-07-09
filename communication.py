@@ -11,7 +11,7 @@ from scapy.all import (
     get_if_list)
 from scapy.layers.l2 import getmacbyip
 
-from logger import Logger, LogError, INFO, WARN, CRIT
+from logger import Logger, LogError, INFO, WARN, ERR, CRIT
 
 
 def str_to_hex(s: str) -> str:
@@ -100,10 +100,10 @@ class CommunicationHandler:
         self.maclookup = MacLookup()
         # self.maclookup.update_vendors()
 
-        self.available_devices = [] # list that holds the replying devices on a network interface, optionally filtered
+        self.available_devices = []  # list that holds the replying devices on a network interface, optionally filtered
         self.selected_devices = []
 
-        self.available_ips = [] # list that holds the replying ip's on a network interface
+        self.available_ips = []  # list that holds the replying ip's on a network interface
 
         self.selected_interface = None
         self.available_interfaces = {}
@@ -133,15 +133,12 @@ class CommunicationHandler:
             if packet[IP].src not in self.available_ips:
                 self.available_ips.append(packet[IP].src)
 
-    def sniff_data(self, src_ip, dest_ip, interface):
+    def sniff_data(self, src_ip: list = None):
         bpf_filter = "udp"
-
         if src_ip:
             bpf_filter += f" and src host {src_ip}"
-        if dest_ip:
-            bpf_filter += f" or dst host {dest_ip}"
 
-        sniff_iface(interface, bpf_filter, self.packet_callback)
+        sniff_iface(self.selected_interface, bpf_filter, self.packet_callback)
 
     def packet_callback(self, packet):
         # Controleer of het pakket een IP-laag en een UDP-laag heeft
@@ -163,10 +160,8 @@ class CommunicationHandler:
             print(f"Payload Lengte:{len(payload)} bytes")
             print(f"Payload (hex): {payload_hex}")
 
-            # Hier kun je logica toevoegen om de payload_hex te analyseren
-            # Bijvoorbeeld, zoek naar specifieke RDM start codes of patronen
-            # if "5253" in payload_hex: # 'RS'
-            #     print("Mogelijk RDM discovery data gevonden!")
+        else:
+            self.log.write("unexpected ip packet passed filter. Check settings and filter", ERR)
 
     def find_devices_by_manufacturer(self, manuf_filter: str = None):
         """
@@ -280,6 +275,7 @@ class CommunicationHandler:
         Searches in specific bytes of the json tree stored in the class. To specify a selection, a HexSelection must be
         passed containing the name of the value that is being searched for, the address index, the length which has
         to be explored after the index, and the preferred formatting.
+        :param prettyprint: prints a tree with the found characters
         :param selections: a list of HexSelection objects, the result will be printed in the order these are provided
         :return: a list of lists, containing the relative time and source ip for each packet in the json tree, followed
         by the printable characters/numbers that are found in the given selections
