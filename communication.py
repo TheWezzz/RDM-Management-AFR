@@ -35,12 +35,15 @@ def hex_to_str(h: str) -> str:
 
 
 def sniff_iface(interface, bpf_filter, function, timeout=None):
+    """
+    @param interface: network interface name
+    @param bpf_filter: filter for network scanning
+    @param function: function to excecute for each packet that matches bpf_filter
+    @param timeout: timeout in seconds
+
+    store=0 makes sure packets are not stored in memory
+    """
     try:
-        # De sniff_iface functie.
-        # `iface` specificeert de netwerkinterface.
-        # `prn` is de functie die voor elk pakket wordt aangeroepen.
-        # `filter` is het BPF filter.
-        # `store=0` zorgt ervoor dat pakketten niet in het geheugen worden opgeslagen.
         sniff(iface=interface, prn=function, filter=bpf_filter, store=1, timeout=timeout)
     except PermissionError:
         print("[!] Fout: Geen permissie om te sniffen. Probeer het script als administrator/root uit te voeren.")
@@ -103,6 +106,8 @@ class CommunicationHandler:
         self.selected_devices = []
         self.available_ips = []
         self.selected_interface = None
+
+        # fill available interfaces with descriptions as keys and the full interface properties as values
         self.available_interfaces = {}
         for iface in conf.ifaces.values():
             self.available_interfaces[iface.description] = iface
@@ -141,15 +146,14 @@ class CommunicationHandler:
         sniff_iface(interface, bpf_filter, self.packet_callback)
 
     def packet_callback(self, packet):
-        # Controleer of het pakket een IP-laag en een UDP-laag heeft
+        # Check if packet has IP and UDP layer
         if IP in packet and UDP in packet:
             ip_layer = packet[IP]
             udp_layer = packet[UDP]
 
-            # Haal de payload op (de data binnen het UDP pakket)
             payload = udp_layer.payload
 
-            # Converteer payload naar hex message, vergelijkbaar me t Wireshark
+            # Convert payload to hex message
             payload_hex = bytes(payload).hex()
 
             print(f"--- Nieuw UDP Pakket Ontvangen ---")
@@ -159,11 +163,6 @@ class CommunicationHandler:
             print(f"Doel Poort:    {udp_layer.dport}")
             print(f"Payload Lengte:{len(payload)} bytes")
             print(f"Payload (hex): {payload_hex}")
-
-            # Hier kun je logica toevoegen om de payload_hex te analyseren
-            # Bijvoorbeeld, zoek naar specifieke RDM start codes of patronen
-            # if "5253" in payload_hex: # 'RS'
-            #     print("Mogelijk RDM discovery data gevonden!")
 
     def find_devices_by_manufacturer(self, manuf_filter: str = None):
         """
