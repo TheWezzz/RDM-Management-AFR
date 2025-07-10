@@ -34,32 +34,6 @@ def hex_to_str(h: str) -> str:
         return '<?>_HEX_ERR'
 
 
-def sniff_iface(interface, bpf_filter, function, timeout=None):
-    try:
-        # De sniff_iface functie.
-        # `iface` specificeert de netwerkinterface.
-        # `prn` is de functie die voor elk pakket wordt aangeroepen.
-        # `filter` is het BPF filter.
-        # `store=0` zorgt ervoor dat pakketten niet in het geheugen worden opgeslagen.
-        sniff(iface=interface, prn=function, filter=bpf_filter, store=1, timeout=timeout)
-    except PermissionError:
-        print("[!] Fout: Geen permissie om te sniffen. Probeer het script als administrator/root uit te voeren.")
-    except OSError as e:
-        if "No such device" in str(e) or "Interface not found" in str(e):
-            print(f"[!] Fout: Netwerkinterface '{interface}' niet gevonden.")
-            print(f"    Controleer de naam van de interface en pas NETWERK_INTERFACE aan in het script.")
-            print(f"    Beschikbare interfaces (vereist root/admin rechten om te zien):")
-            try:
-                print(f"    {get_if_list()}")
-            except Exception as e_if:
-                print(f"    Kon interfaces niet laden: {e_if}")
-        else:
-            print(f"[!] Een OSError is opgetreden: {e}")
-            print(f"    Mogelijk moet Npcap (Windows) of libpcap (Linux/macOS) geïnstalleerd of bijgewerkt worden.")
-    except Exception as e:
-        print(f"[!] Een onverwachte fout is opgetreden: {e}")
-
-
 class JsonKeyError(LookupError):
     def __init__(self, missing_key: str, skipped_count: int):
         message = f"could not find {missing_key}, skipped {skipped_count} packets"
@@ -123,9 +97,27 @@ class CommunicationHandler:
         else:
             return packet_data
 
+    def sniff_iface(self, interface, bpf_filter, function, timeout=None):
+        try:
+            # De sniff_iface functie.
+            # `iface` specificeert de netwerkinterface.
+            # `prn` is de functie die voor elk pakket wordt aangeroepen.
+            # `filter` is het BPF filter.
+            # `store=0` zorgt ervoor dat pakketten niet in het geheugen worden opgeslagen.
+            sniff(iface=interface, prn=function, filter=bpf_filter, store=1, timeout=timeout)
+        except PermissionError:
+            self.log.write(f"Permission denied for interface {interface}, try to run as administrator", CRIT)
+        except OSError as e:
+            if "No such device" in str(e) or "Interface not found" in str(e):
+                self.log.write(f"Network interface '{interface}' not found, check name")
+            else:
+                self.log.write(f"OS error occured, Npcap or libpcap possibly needs to be installed or updated: {e}")
+        except Exception as e:
+            self.log.write(f"An unexpected error occured: {e}")
+
     def sniff_artnet(self, interface):
         self.log.write(f"Sniffing for ARTNET on interface '{interface.description}'", INFO)
-        sniff_iface(interface, "udp port 6454", self.add_ip_from_packet, 5)
+        self.sniff_iface(interface, "udp port 6454", self.add_ip_from_packet, 3)
         return self.available_ips
 
     def add_ip_from_packet(self, packet):
@@ -138,7 +130,7 @@ class CommunicationHandler:
         if src_ip:
             bpf_filter += f" and src host {src_ip}"
 
-        sniff_iface(self.selected_interface, bpf_filter, self.packet_callback)
+        self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback)
 
     def packet_callback(self, packet):
         # Controleer of het pakket een IP-laag en een UDP-laag heeft
