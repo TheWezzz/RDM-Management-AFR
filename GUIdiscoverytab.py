@@ -47,4 +47,5 @@ class DiscoveryTab(QWidget):
         main_layout.addLayout(right_layout, 4)  # Add right layout with a stretch factor of 4 (takes more space)
 
     def _scan_network(self):
-        pass
+        for device in self.com_handler.selected_devices:
+            self.com_handler.sniff_data(device["ip address"])

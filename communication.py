@@ -92,10 +92,47 @@ class CommunicationHandler:
             msg = f"File not found at '{self.path}', please check spelling. caused by {e.__repr__()}"
             raise FileNotFoundError(msg) from e
         except json.JSONDecodeError as e:
+            if e.lineno == 1:
+                # file is probably empty, returning empty list
+                return {}
             msg = f"could not decode current Json format. caused by: {e.__repr__()}"
             raise InvalidJsonFormatError(msg, self.path, e.lineno) from e
         else:
             return packet_data
+
+    def json_write_packet(self, packet):
+        """
+        Loads the existing JSON file,
+        appends the new packet, and writes the entire list back to the file.
+        This ensures the JSON file remains a valid list of packet objects.
+
+        :param packet: The Scapy packet to be added to the JSON file.
+        """
+        # Read the existing data, append the new packet, and write back.
+        try:
+            # Load all current packets from the file. load_json handles empty/new files.
+            all_packets = self.load_json()
+            if not isinstance(all_packets, list):
+                self.log.write(f"JSON file '{self.path}' is not a list. Starting a new list.", WARN)
+                all_packets = []
+        except FileNotFoundError:
+            # If the file doesn't exist we start with an empty list.
+            self.log.write(f"File not found, creating a new packet list.", WARN)
+            all_packets = []
+        except InvalidJsonFormatError:
+            self.log.write(f"JSON file is not a valid JSON format. Starting a new list", WARN)
+            all_packets = []
+        # Append the new packet dictionary
+        all_packets.append(packet.json())
+        # Write the updated list back to the file
+        try:
+            with open(self.path, 'w') as f:
+                # Overwrite the file with the updated list of packets.
+                # indent=4 makes the file human-readable.
+                json.dump(all_packets, f, ensure_ascii=False, indent=4)
+            self.log.write(f"Packet '{packet.summary()}' appended to JSON file", INFO)
+        except IOError as e:
+            self.log.write(f"Failed to write to JSON file: {e}", CRIT)
 
     def sniff_iface(self, interface, bpf_filter, function, timeout=None):
         try:
@@ -130,7 +167,7 @@ class CommunicationHandler:
         if src_ip:
             bpf_filter += f" and src host {src_ip}"
 
-        self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback)
+        self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback, 3)
 
     def packet_callback(self, packet):
         # Controleer of het pakket een IP-laag en een UDP-laag heeft
@@ -151,6 +188,10 @@ class CommunicationHandler:
             print(f"Doel Poort:    {udp_layer.dport}")
             print(f"Payload Lengte:{len(payload)} bytes")
             print(f"Payload (hex): {payload_hex}")
+
+            # Write the received packet to the JSON file
+            self.json_write_packet(packet)
+
 
         else:
             self.log.write("unexpected ip packet passed filter. Check settings and filter", ERR)
