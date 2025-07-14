@@ -7,8 +7,7 @@ from scapy.all import (
     UDP,
     IP,
     ICMP,
-    Ether,
-    get_if_list)
+    Ether)
 from scapy.layers.l2 import getmacbyip
 
 from logger import Logger, LogError, INFO, WARN, ERR, CRIT
@@ -84,6 +83,7 @@ class CommunicationHandler:
         for iface in conf.ifaces.values():
             self.available_interfaces[iface.description] = iface
 
+    # ==========| JSON formatting and read/write |==========
     def load_json(self) -> dict:
         try:
             with open(self.path, 'r') as f:
@@ -134,6 +134,7 @@ class CommunicationHandler:
         except IOError as e:
             self.log.write(f"Failed to write to JSON file: {e}", CRIT)
 
+    # ==========| Ethernet sniffing, searching packets |==========
     def sniff_iface(self, interface, bpf_filter, function, timeout=None):
         try:
             # De sniff_iface functie.
@@ -191,7 +192,6 @@ class CommunicationHandler:
 
             # Write the received packet to the JSON file
             self.json_write_packet(packet)
-
 
         else:
             self.log.write("unexpected ip packet passed filter. Check settings and filter", ERR)
@@ -260,7 +260,6 @@ class CommunicationHandler:
             raise JsonKeyError("UDP payload (source->layers->udp->udp.payload)",
                                skipped_packets_count)
 
-        print(f"UDP extraction finished.")
         return udp_payloads, udp_ports
 
     def extract_source_ips(self):
@@ -280,7 +279,6 @@ class CommunicationHandler:
             raise JsonKeyError("source ip adresses(source->layers->eth->eth.src_tree->eth.addr_resolved)",
                                skipped_packets_count)
 
-        print(f"IP extraction finished.")
         return IPs
 
     def extract_time(self):
@@ -300,7 +298,6 @@ class CommunicationHandler:
             raise JsonKeyError("time(source->layers->udp->timestamps->udp.time_relative)",
                                skipped_packets_count)
 
-        print(f"Time extraction finished.")
         return times
 
     def search_payload(self, selections: list[HexSelection], prettyprint=False) -> list[list]:
