@@ -71,7 +71,7 @@ def datetime_to_unix(t: timestamp) -> tuple[float, err_warn]:
 
 
 def check_uid_and_datetime_format(uid: str, time: str) -> err_warn:
-    uid_pattern = '\w{4}-\w{8}' # TODO check met de lijst van RDM manufacturers of hij geldig is
+    uid_pattern = '\w{4}-\w{8}'  # TODO check met de lijst van RDM manufacturers of hij geldig is
     time_pattern = '\A2\d{3} - [1-12] - [1-31]: [0-1][0-9]|2[0-3]:[0-5][0-9]:[0-5][0-9]\Z'
     uid_found = re.search(uid_pattern, uid)
     time_found = re.search(time_pattern, time)
@@ -87,6 +87,27 @@ def check_uid_and_datetime_format(uid: str, time: str) -> err_warn:
 
 
 class RDM_logs:
+    def __init__(self, database_location: str):
+
+        self.selected_uid = rdm_uid
+        self.selected_name = device_name
+        self.data_log_location = database_location
+        self.data = {
+            '0000:0000': {
+                datetime.datetime(1900, 1, 1,
+                                  9, 00, 00): {
+                    'manufacturer': 'TEST',
+                    'name': 'Dummy model',
+                    'firmware_version': 'v1.0',
+                    'sensors': {
+                        'voltage': 230,
+                        'temperature': 80},
+                    'errors': {},
+                    'lamp_hours': 2000,
+                    'serial_number': '0000'},
+            }
+        }
+
     def add_data(
             self,
             uid: rdm_uid,
@@ -113,13 +134,13 @@ class RDM_logs:
                 return True
         else:  # uid not in log
             self.data.update({uid: {time: {
-                    'manufacturer': mftr,
-                    'name': name,
-                    'firmware_version': fw_vs,
-                    'sensors': sens,
-                    'errors': set(err),
-                    'lamp_hours': hours,
-                    **kwargs}}})
+                'manufacturer': mftr,
+                'name': name,
+                'firmware_version': fw_vs,
+                'sensors': sens,
+                'errors': set(err),
+                'lamp_hours': hours,
+                **kwargs}}})
             return True
 
     def read_file(self):  # TODO: finish this.
@@ -137,27 +158,6 @@ class RDM_logs:
                         line += "; " + str(param)
                     line += "\n"
                     csvfile.write(line)
-
-    def __init__(self, database_location: str):
-
-        self.selected_uid = rdm_uid
-        self.selected_name = device_name
-        self.data_log_location = database_location
-        self.data = {
-            '0000:0000': {
-                datetime.datetime(1900, 1, 1,
-                                  9, 00, 00): {
-                    'manufacturer': 'TEST',
-                    'name': 'Dummy model',
-                    'firmware_version': 'v1.0',
-                    'sensors': {
-                        'voltage': 230,
-                        'temperature': 80},
-                    'errors': {},
-                    'lamp_hours': 2000,
-                    'serial_number': '0000'},
-            }
-        }
 
     def get_device_records(self, uid: rdm_uid) -> tuple[device_records, err_warn]:
         records = self.data.get(uid, None)
@@ -200,9 +200,11 @@ class RDM_logs:
                     name_count += 1
 
             if not name:
-                raise ValueError(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. {ERR_NO_NAMES_FOUND}. ")
+                raise ValueError(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. "
+                                 f"{ERR_NO_NAMES_FOUND}. ")
             elif name_count != rec_count:
-                raise ValueError(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. only {name_count} names found. ")
+                raise ValueError(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. "
+                                 f"only {name_count} names found. ")
             else:
                 return name
 
@@ -214,7 +216,7 @@ class RDM_logs:
         err_list = []
         for uid in uids:
             try:
-                name= self.get_name(uid)
+                name = self.get_name(uid)
             except ValueError as e:
                 err_list.append(e)
             else:
@@ -245,10 +247,12 @@ class RDM_logs:
                     fw_count += 1
 
             if not fw_version:
-                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. {ERR_NO_FW_FOUND}.",
+                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. "
+                                     f"{ERR_NO_FW_FOUND}. ",
                                      err_list)
             elif fw_count < rec_count:
-                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. {ERR_INCOMPLETE_FW_HISTORY}.",
+                raise ExceptionGroup(f"retrieved {rec_count} records from uid {uid}: {get_rec_text}. "
+                                     f"{ERR_INCOMPLETE_FW_HISTORY}. ",
                                      err_list)
             else:
                 return fw_version
