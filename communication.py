@@ -142,6 +142,9 @@ class CommunicationHandler:
             # `prn` is de functie die voor elk pakket wordt aangeroepen.
             # `filter` is het BPF filter.
             # `store=0` zorgt ervoor dat pakketten niet in het geheugen worden opgeslagen.
+            self.log.write(
+                f"Sniffing on interface '{interface}' with bpf filter '{bpf_filter}' "
+                f"{f"for {timeout} seconds" if timeout else f"until input"}", INFO)
             sniff(iface=interface, prn=function, filter=bpf_filter, store=1, timeout=timeout)
         except PermissionError:
             self.log.write(f"Permission denied for interface {interface}, try to run as administrator", CRIT)
@@ -181,14 +184,6 @@ class CommunicationHandler:
 
             # Converteer payload naar hex message, vergelijkbaar me t Wireshark
             payload_hex = bytes(payload).hex()
-
-            print(f"--- Nieuw UDP Pakket Ontvangen ---")
-            print(f"Bron IP:       {ip_layer.src}")
-            print(f"Doel IP:       {ip_layer.dst}")
-            print(f"Bron Poort:    {udp_layer.sport}")
-            print(f"Doel Poort:    {udp_layer.dport}")
-            print(f"Payload Lengte:{len(payload)} bytes")
-            print(f"Payload (hex): {payload_hex}")
 
             # Write the received packet to the JSON file
             self.json_write_packet(packet)
@@ -257,7 +252,9 @@ class CommunicationHandler:
                 skipped_packets_count += 1
                 continue
         if skipped_packets_count > 0:
-            raise JsonKeyError("UDP payload (source->layers->udp->udp.payload)",
+            # Updated error message for clarity
+            self.log.write(f"Skipped {skipped_packets_count} packets that did not contain a UDP payload.", WARN)
+            raise JsonKeyError("UDP payload (source->layers->udp->udp.payload)", # TODO update paths in jsonkeyerrors
                                skipped_packets_count)
 
         return udp_payloads, udp_ports
@@ -276,6 +273,7 @@ class CommunicationHandler:
                 skipped_packets_count += 1
                 continue
         if skipped_packets_count > 0:
+            self.log.write(f"Skipped {skipped_packets_count} packets that did not contain a source IP address.", WARN)
             raise JsonKeyError("source ip adresses(source->layers->eth->eth.src_tree->eth.addr_resolved)",
                                skipped_packets_count)
 
@@ -295,6 +293,7 @@ class CommunicationHandler:
                 skipped_packets_count += 1
                 continue
         if skipped_packets_count > 0:
+            self.log.write(f"Skipped {skipped_packets_count} packets that did not have a timestamp.", WARN)
             raise JsonKeyError("time(source->layers->udp->timestamps->udp.time_relative)",
                                skipped_packets_count)
 
@@ -311,6 +310,7 @@ class CommunicationHandler:
         by the printable characters/numbers that are found in the given selections
         """
 
+        self.log.write("search started, collecting data...", INFO)
         times = self.extract_time()
         source_ips = self.extract_source_ips()
         hex_payloads = self.extract_udp_payloads()[0]
