@@ -216,12 +216,14 @@ class CommunicationHandler:
             if packet[IP].src not in self.available_ips:
                 self.available_ips.append(packet[IP].src)
 
-    def sniff_data(self, src_ip: list = None):
-        bpf_filter = "udp"
-        if src_ip:
-            bpf_filter += f" and src host {src_ip}"
-
-        self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback, 3)
+    def sniff_data(self, src_ip):
+        if src_ip == "selected":
+            for dev in self.selected_devices:
+                bpf_filter = f"udp and src host {dev['ip address']}"
+                self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback, 3)
+        else:
+            bpf_filter = f"udp and src host {src_ip}"
+            self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback, 3)
 
     def packet_callback(self, packet):
         # Controleer of het pakket een IP-laag en een UDP-laag heeft
