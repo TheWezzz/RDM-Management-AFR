@@ -1,7 +1,8 @@
 from PyQt6.QtGui import QStandardItemModel
-from PyQt6.QtWidgets import QWidget, QPushButton, QComboBox, QVBoxLayout, QHBoxLayout, QTableView
+from PyQt6.QtWidgets import QWidget, QPushButton, QComboBox, QVBoxLayout, QHBoxLayout, QTableView, QLabel
 
 from FILENAMES import *
+from data import str_to_html
 from logger import Logger
 
 
@@ -21,6 +22,7 @@ class DiscoveryTab(QWidget):
         protocol_combo.addItems(["Network Search"])
         # protocol_combo.currentTextChanged.connect(self._een_andere_methode)
 
+        info_label = QLabel(str_to_html(self.com_handler.get_info()))
         # Create widgets right
         self.discovery_table_view = QTableView()
         self.discovery_model = QStandardItemModel(0, 4)
@@ -37,6 +39,7 @@ class DiscoveryTab(QWidget):
         left_layout = QVBoxLayout()
         left_layout.addWidget(discovery_button)
         left_layout.addWidget(protocol_combo)
+        left_layout.addWidget(info_label)
         left_layout.addStretch()  # Pushes widgets to the top
 
         # Right side: Table view

@@ -18,12 +18,9 @@ from data import RDM_logs
 from logger import Logger
 
 
-def str_to_html(s: str) -> str:
-    return s.replace("\n", "<br>")
-
-
 class MainWindow(QMainWindow):
-    def __init__(self, data_handler: RDM_logs, com_handler: CommunicationHandler):  # Accepteer de RDM_logs instantie en com_handler als argumenten
+    def __init__(self, data_handler: RDM_logs,
+                 com_handler: CommunicationHandler):  # Accepteer de RDM_logs instantie en com_handler als argumenten
         super().__init__()
         self.log = Logger(LOGPATH, "GUI Window")
         self.screensize = QApplication.primaryScreen().availableSize()
@@ -34,8 +31,7 @@ class MainWindow(QMainWindow):
         self.setWindowIcon(logo_icon)
 
         self.data_handler = data_handler  # Gebruik de meegegeven RDM_logs instantie
-        self.com_handler = com_handler # Gebruik de geconfigureerde CommunicationHandler
-        print("selected device(s): ", self.com_handler.selected_devices) # TODO Laat de geselecteerde devices zien in een tab
+        self.com_handler = com_handler  # Gebruik de geconfigureerde CommunicationHandler
 
         self.tab_widget = QTabWidget()
         self.setCentralWidget(self.tab_widget)

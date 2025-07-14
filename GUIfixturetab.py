@@ -4,12 +4,9 @@ from PyQt6.QtWidgets import (QWidget, QPushButton, QListWidget, QLabel, QVBoxLay
                              QHBoxLayout, QGridLayout, QListWidgetItem, QTabWidget)
 
 from FILENAMES import *
+from data import str_to_html
 from data import param_to_string, datetime_to_unix
 from logger import Logger, INFO, WARN, ERR
-
-
-def str_to_html(s: str) -> str:
-    return s.replace("\n", "<br>")
 
 
 class FixtureTab(QWidget):

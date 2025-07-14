@@ -10,27 +10,8 @@ from scapy.all import (
     Ether)
 from scapy.layers.l2 import getmacbyip
 
+from data import hex_to_str
 from logger import Logger, LogError, INFO, WARN, ERR, CRIT
-
-
-def str_to_hex(s: str) -> str:
-    """
-    Convert message hex byte representation.
-    """
-    s_bytes = s.encode('ascii', 'replace')
-    return s_bytes.hex()
-
-
-def hex_to_str(h: str) -> str:
-    """
-    Convert hex message to normal message.
-    Unknown bytes are replaced by '�'.
-    """
-    try:
-        s_bytes = bytes.fromhex(h)
-        return s_bytes.decode('ascii', 'replace')
-    except ValueError:
-        return '<?>_HEX_ERR'
 
 
 class JsonKeyError(LookupError):
@@ -82,6 +63,19 @@ class CommunicationHandler:
         self.available_interfaces = {}
         for iface in conf.ifaces.values():
             self.available_interfaces[iface.description] = iface
+
+    def get_info(self):
+        res = f"Beschikbare interfaces op apparaat:\n"
+        for iface in self.available_interfaces:
+            res += f"  {iface}\n"
+        res += (f"\nGeselecteerde interface:\n"
+                f"  {self.selected_interface}\n"
+                f"\nAantal apparaten op netwerk:\n"
+                f"  {len(self.available_devices)}\n"
+                f"\nGeselecteerde apparaten:\n")
+        for dev in self.selected_devices:
+            res += f"  {dev["ip address"]}\n"
+        return res
 
     # ==========| JSON formatting and read/write |==========
     def load_json(self) -> dict:
