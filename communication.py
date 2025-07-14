@@ -287,13 +287,13 @@ class CommunicationHandler:
         for packet in self.json_tree:
             # Check if the required keys exist in our new format
             if ("layers" in packet and
-                "udp" in packet["layers"] and
-                "payload" in packet["layers"]["udp"]):
+                    "udp" in packet["layers"] and
+                    "payload" in packet["layers"]["udp"]):
 
                 # Extract port and payload from the new structure
-                port = packet["layers"]["udp"].get("dport", "N/A")  # .get is safer
+                port = packet["layers"]["udp"].get("dport", "N/A")
                 udp_ports.append(port)
-                payload = packet["layers"]["udp"]["payload"]  # No need for .replace(":", "") anymore
+                payload = packet["layers"]["udp"]["payload"]
                 udp_payloads.append(payload)
             else:
                 skipped_packets_count += 1
@@ -301,7 +301,7 @@ class CommunicationHandler:
         if skipped_packets_count > 0:
             # Updated error message for clarity
             self.log.write(f"Skipped {skipped_packets_count} packets that did not contain a UDP payload.", WARN)
-            raise JsonKeyError("UDP payload (source->layers->udp->udp.payload)", # TODO update paths in jsonkeyerrors
+            raise JsonKeyError("UDP payload (layers->udp->payload)",
                                skipped_packets_count)
 
         return udp_payloads, udp_ports
@@ -321,7 +321,7 @@ class CommunicationHandler:
                 continue
         if skipped_packets_count > 0:
             self.log.write(f"Skipped {skipped_packets_count} packets that did not contain a source IP address.", WARN)
-            raise JsonKeyError("source ip adresses(source->layers->eth->eth.src_tree->eth.addr_resolved)",
+            raise JsonKeyError("source ip adresses(layers->eth->src)",
                                skipped_packets_count)
 
         return IPs
@@ -339,7 +339,7 @@ class CommunicationHandler:
                 continue
         if skipped_packets_count > 0:
             self.log.write(f"Skipped {skipped_packets_count} packets that did not have a timestamp.", WARN)
-            raise JsonKeyError("time(source->layers->udp->timestamps->udp.time_relative)",
+            raise JsonKeyError("time(timestamp)",
                                skipped_packets_count)
 
         return times
