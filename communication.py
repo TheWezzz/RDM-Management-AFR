@@ -123,7 +123,7 @@ class CommunicationHandler:
             self.log.write(f"JSON file is not a valid JSON format. Starting a new list", WARN)
             all_packets = []
         # Append the new packet dictionary
-        all_packets.append(packet.json())
+        all_packets.append(self.packet_to_json(packet))
         # Write the updated list back to the file
         try:
             with open(self.path, 'w') as f:
@@ -133,6 +133,56 @@ class CommunicationHandler:
             self.log.write(f"Packet '{packet.summary()}' appended to JSON file", INFO)
         except IOError as e:
             self.log.write(f"Failed to write to JSON file: {e}", CRIT)
+
+    def packet_to_json(self, packet) -> dict:
+        """
+        Formats a Scapy packet into a structured dictionary for JSON serialization.
+
+        :param packet: The Scapy packet.
+        :return: A dictionary with key information from the packet.
+        """
+        packet_dict = {
+            "timestamp": packet.time,  # Unix timestamp of packet arrival
+            "summary": packet.summary(),
+            "layers": {}
+        }
+
+        # Ethernet Layer
+        if Ether in packet:
+            packet_dict["layers"]["eth"] = {
+                "src": packet[Ether].src,
+                "dst": packet[Ether].dst
+            }
+
+        # IP Layer
+        if IP in packet:
+            packet_dict["layers"]["ip"] = {
+                "src": packet[IP].src,
+                "dst": packet[IP].dst,
+                "len": packet[IP].len,
+                "proto": packet[IP].proto
+            }
+
+        # UDP Layer
+        if UDP in packet:
+            # Get the raw payload and convert it to a hex string
+            payload_hex = bytes(packet[UDP].payload).hex()
+
+            packet_dict["layers"]["udp"] = {
+                "sport": packet[UDP].sport,
+                "dport": packet[UDP].dport,
+                "len": packet[UDP].len,
+                "payload": payload_hex  # Store payload as a clean hex string
+            }
+
+        # ICMP Layer
+        if ICMP in packet:
+            packet_dict["layers"]["icmp"] = {
+                "type": packet[ICMP].type,
+                "code": packet[ICMP].code
+            }
+        print(packet_dict)
+        return packet_dict
 
     # ==========| Ethernet sniffing, searching packets |==========
     def sniff_iface(self, interface, bpf_filter, function, timeout=None):
@@ -239,14 +289,15 @@ class CommunicationHandler:
         udp_ports = []
         skipped_packets_count = 0
         for packet in self.json_tree:
-            if ("_source" in packet and
-                    "layers" in packet["_source"] and
-                    "udp" in packet["_source"]["layers"] and
-                    "udp.payload" in packet["_source"]["layers"]["udp"] and
-                    "udp.dstport" in packet["_source"]["layers"]["udp"]):
-                port = packet["_source"]["layers"]["udp"]["udp.port"]
+            # Check if the required keys exist in our new format
+            if ("layers" in packet and
+                "udp" in packet["layers"] and
+                "payload" in packet["layers"]["udp"]):
+
+                # Extract port and payload from the new structure
+                port = packet["layers"]["udp"].get("dport", "N/A")  # .get is safer
                 udp_ports.append(port)
-                payload = packet["_source"]["layers"]["udp"]['udp.payload'].replace(":", "")
+                payload = packet["layers"]["udp"]["payload"]  # No need for .replace(":", "") anymore
                 udp_payloads.append(payload)
             else:
                 skipped_packets_count += 1
@@ -263,11 +314,11 @@ class CommunicationHandler:
         IPs = []
         skipped_packets_count = 0
         for packet in self.json_tree:
-            if ("_source" in packet and
-                    "layers" in packet["_source"] and
-                    "eth" in packet["_source"]["layers"] and
-                    "eth.addr_resolved" in packet["_source"]["layers"]["eth"]["eth.dst_tree"]):
-                ip = packet["_source"]["layers"]["eth"]["eth.src_tree"]['eth.addr_resolved']
+            # Check for the IP layer and the source IP key
+            if ("layers" in packet and
+                    "ip" in packet["layers"] and
+                    "src" in packet["layers"]["ip"]):
+                ip = packet["layers"]["ip"]["src"]
                 IPs.append(ip)
             else:
                 skipped_packets_count += 1
@@ -283,11 +334,9 @@ class CommunicationHandler:
         times = []
         skipped_packets_count = 0
         for packet in self.json_tree:
-            if ("_source" in packet and
-                    "layers" in packet["_source"] and
-                    "udp" in packet["_source"]["layers"] and
-                    "udp.time_relative" in packet["_source"]["layers"]["udp"]["Timestamps"]):
-                time = packet["_source"]["layers"]["udp"]["Timestamps"]["udp.time_relative"]
+            # Check for the top-level timestamp key
+            if "timestamp" in packet:
+                time = packet["timestamp"]
                 times.append(time)
             else:
                 skipped_packets_count += 1
