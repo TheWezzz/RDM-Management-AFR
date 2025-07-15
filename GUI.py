@@ -1,14 +1,7 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QIcon, QPixmap
-from PyQt6.QtWidgets import (
-    QMainWindow,
-    QTabWidget,
-    QVBoxLayout,
-    QLabel,
-    QDialog,
-    QDialogButtonBox,
-    QStyle, QApplication
-)
+from PyQt6.QtWidgets import (QMainWindow, QTabWidget, QVBoxLayout, QLabel, QDialog, QDialogButtonBox, QStyle,
+                             QApplication)
 
 from FILENAMES import *
 from GUIdiscoverytab import DiscoveryTab
@@ -23,7 +16,7 @@ def str_to_html(s: str) -> str:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, data_handler: RDM_logs, com_handler: CommunicationHandler):  # Accepteer de RDM_logs instantie en com_handler als argumenten
+    def __init__(self, data_handler: RDM_logs, com_handler: CommunicationHandler):
         super().__init__()
         self.log = Logger(LOGPATH, "GUI Window")
         self.screensize = QApplication.primaryScreen().availableSize()
@@ -33,8 +26,8 @@ class MainWindow(QMainWindow):
         logo_icon = QIcon(logo_pixmap)
         self.setWindowIcon(logo_icon)
 
-        self.data_handler = data_handler  # Gebruik de meegegeven RDM_logs instantie
-        self.com_handler = com_handler # Gebruik de geconfigureerde CommunicationHandler
+        self.data_handler = data_handler
+        self.com_handler = com_handler
         print("selected device(s): ", self.com_handler.selected_devices) # TODO Laat de geselecteerde devices zien in een tab
 
         self.tab_widget = QTabWidget()

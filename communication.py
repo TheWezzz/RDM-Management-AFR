@@ -1,14 +1,7 @@
 import json
 
 from mac_vendor_lookup import MacLookup, VendorNotFoundError
-from scapy.all import (
-    conf,
-    sniff,
-    UDP,
-    IP,
-    ICMP,
-    Ether,
-    get_if_list)
+from scapy.all import conf, sniff, UDP, IP, ICMP, Ether, get_if_list
 from scapy.layers.l2 import getmacbyip
 
 from logger import Logger, LogError, INFO, WARN, CRIT

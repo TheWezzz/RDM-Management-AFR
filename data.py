@@ -149,11 +149,11 @@ class RDM_logs:
                 l = line.split("; ")
                 check_uid_and_datetime_format(l[0], l[1])
 
-    def write_to_file(self):  # TODO: implement loop through self.log and write to file
+    def write_to_file(self):
         with open(self.data_log_location, 'w') as csvfile:
             for uid in self.get_all_rdm_uids():
                 for time in self.data[uid]:
-                    line = "; ".join([uid, str(time)])
+                    line = f"{uid}; {str(time)}"
                     for param in self.data[uid][time].values():
                         line += "; " + str(param)
                     line += "\n"
@@ -274,10 +274,6 @@ class RDM_logs:
         if err_list:
             raise ExceptionGroup("found records with invalid firmware history", err_list)
         return res
-
-    # TODO: go through the firmware records of a uid list and return dict
-    def compare_firmware(self, uid: rdm_uid) -> tuple[bool, err_warn]:
-        pass
 
     def device_records_to_string(self, uids: list[rdm_uid]):
         res = "\n"
