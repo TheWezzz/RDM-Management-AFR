@@ -3,16 +3,12 @@ import sys
 from PyQt6.QtWidgets import QApplication
 from GUIsplash import ConfigWindow
 
-from communication import CommunicationHandler, HexSelection
-from logger import ERR
-
-
 if __name__ == "__main__":
 
     # JSON EXTRACTION
-    start_selection = HexSelection("Start of payload", "0x0a", 3, "dec")
-    try1 = HexSelection("matching couples", "0x09", 1, "dec")
-    value_selection = HexSelection("Value", "0x21", 14, "ascii")
+    # start_selection = HexSelection("Start of payload", "0x0a", 3, "dec")
+    # try1 = HexSelection("matching couples", "0x09", 1, "dec")
+    # value_selection = HexSelection("Value", "0x21", 14, "ascii")
 
     # try:
     #     res = handler1.search_payload([start_selection, try1, value_selection], prettyprint=False)
