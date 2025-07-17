@@ -10,6 +10,7 @@ from scapy.all import (
     Ether)
 from scapy.layers.l2 import getmacbyip
 
+from FILENAMES import fixture_tester_payload
 from logger import Logger, LogError, INFO, WARN, ERR, CRIT
 
 
@@ -169,17 +170,34 @@ class CommunicationHandler:
         return packet_dict
 
     # ==========| Ethernet sniffing, searching packets |==========
-    def sniff_iface(self, interface, bpf_filter, function, timeout=None):
+    def sniff_iface(self,
+                    interface,
+                    bpf_filter,
+                    packet_match_function,
+                    payload_filter_exclude=None,
+                    timeout=None):
+        if payload_filter_exclude:
+            lfilter = lambda packet: (UDP in packet and
+                                      bytes(packet[UDP].payload) != payload_filter_exclude.replace(":", ""))
+        else:
+            lfilter = None
+
+        self.log.write(f"Sniffing on interface '{interface}'"
+                       f"with bpf filter '{bpf_filter}'"
+                       f"with payload filter '{lfilter}'"
+                       f"{f"for {timeout} seconds" if timeout else f"until input"}", INFO)
         try:
             # De sniff_iface functie.
             # `iface` specificeert de netwerkinterface.
             # `prn` is de functie die voor elk pakket wordt aangeroepen.
             # `filter` is het BPF filter.
             # `store=0` zorgt ervoor dat pakketten niet in het geheugen worden opgeslagen.
-            self.log.write(
-                f"Sniffing on interface '{interface}' with bpf filter '{bpf_filter}' "
-                f"{f"for {timeout} seconds" if timeout else f"until input"}", INFO)
-            sniff(iface=interface, prn=function, filter=bpf_filter, store=1, timeout=timeout)
+            sniff(iface=interface,
+                  prn=packet_match_function,
+                  filter=bpf_filter,
+                  lfilter=lfilter,
+                  store=1,
+                  timeout=timeout)
         except PermissionError:
             self.log.write(f"Permission denied for interface {interface}, try to run as administrator", CRIT)
         except OSError as e:
@@ -192,7 +210,11 @@ class CommunicationHandler:
 
     def sniff_artnet(self, interface):
         self.log.write(f"Sniffing for ARTNET on interface '{interface.description}'", INFO)
-        self.sniff_iface(interface, "udp port 6454", self.add_ip_from_packet, 3)
+        self.sniff_iface(interface=interface,
+                         bpf_filter="udp port 6454",
+                         payload_filter_exclude=fixture_tester_payload,
+                         packet_match_function=self.add_ip_from_packet,
+                         timeout=3)
         return self.available_ips
 
     def add_ip_from_packet(self, packet):
@@ -204,28 +226,16 @@ class CommunicationHandler:
         if src_ip == "selected":
             for dev in self.selected_devices:
                 bpf_filter = f"udp and src host {dev['ip address']}"
-                self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback, 3)
+                self.sniff_iface(interface=self.selected_interface,
+                                 bpf_filter=bpf_filter,
+                                 packet_match_function=self.json_write_packet,
+                                 timeout=8)
         else:
             bpf_filter = f"udp and src host {src_ip}"
-            self.sniff_iface(self.selected_interface, bpf_filter, self.packet_callback, 3)
-
-    def packet_callback(self, packet):
-        # Controleer of het pakket een IP-laag en een UDP-laag heeft
-        if IP in packet and UDP in packet:
-            ip_layer = packet[IP]
-            udp_layer = packet[UDP]
-
-            # Haal de payload op (de data binnen het UDP pakket)
-            payload = udp_layer.payload
-
-            # Converteer payload naar hex message, vergelijkbaar me t Wireshark
-            payload_hex = bytes(payload).hex()
-
-            # Write the received packet to the JSON file
-            self.json_write_packet(packet)
-
-        else:
-            self.log.write("unexpected ip packet passed filter. Check settings and filter", ERR)
+            self.sniff_iface(interface=self.selected_interface,
+                             bpf_filter=bpf_filter,
+                             packet_match_function=self.json_write_packet,
+                             timeout=8)
 
     def find_devices_by_manufacturer(self, manuf_filter: str = None):
         """
