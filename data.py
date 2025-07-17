@@ -38,6 +38,7 @@ ERR_MISSING_FW = "missing firmware version"
 month_texts = ("january", "february", "march", "april", "may", "june", "july", "august", "september", "october",
                "november", "december")
 
+
 def str_to_hex(s: str) -> str:
     """
     Convert message hex byte representation.
@@ -45,8 +46,10 @@ def str_to_hex(s: str) -> str:
     s_bytes = s.encode('ascii', 'replace')
     return s_bytes.hex()
 
+
 def str_to_html(s: str) -> str:
     return s.replace("\n", "<br>")
+
 
 def param_to_string(parameters: dict,
                     prefix: str = "",

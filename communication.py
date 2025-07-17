@@ -11,7 +11,7 @@ from scapy.all import (
 from scapy.layers.l2 import getmacbyip
 
 from FILENAMES import fixture_tester_payload
-from logger import Logger, LogError, INFO, WARN, ERR, CRIT
+from logger import Logger, LogError, INFO, WARN, CRIT
 
 
 class JsonKeyError(LookupError):
@@ -24,6 +24,7 @@ class InvalidJsonFormatError(LookupError):
     def __init__(self, msg: str, file: str, position):
         message = f"{msg}: formatting line {position} failed. Check if file (at {file}) is in valid JSON format."
         super().__init__(message)
+
 
 class CommunicationHandler:
     def __init__(self, json_path, log_path):
@@ -189,11 +190,6 @@ class CommunicationHandler:
                        f"with payload filter '{lfilter}'"
                        f"{f"for {timeout} seconds" if timeout else f"until input"}", INFO)
         try:
-            # De sniff_iface functie.
-            # `iface` specificeert de netwerkinterface.
-            # `prn` is de functie die voor elk pakket wordt aangeroepen.
-            # `filter` is het BPF filter.
-            # `store=0` zorgt ervoor dat pakketten niet in het geheugen worden opgeslagen.
             sniff(iface=interface,
                   prn=packet_match_function,
                   filter=bpf_filter,
@@ -275,7 +271,7 @@ class CommunicationHandler:
                 # skip when filter text is not found in device manufacturer
                 if (manuf_filter.lower() not in device["manufacturer"].lower() or
                         # skip when device manufacturer is already added to selected devices
-                        device["manufacturer"] in self.selected_devices):
+                        device["manufacturer"] in self.available_devices):
                     continue
             self.available_devices.append(device)
 
@@ -301,11 +297,9 @@ class CommunicationHandler:
                 skipped_packets_count += 1
                 continue
         if skipped_packets_count > 0:
-            # Updated error message for clarity
             self.log.write(f"Skipped {skipped_packets_count} packets that did not contain a UDP payload.", WARN)
             raise JsonKeyError("UDP payload (layers->udp->payload)",
                                skipped_packets_count)
-
         return udp_payloads, udp_ports
 
     def extract_source_ips(self):
@@ -325,7 +319,6 @@ class CommunicationHandler:
             self.log.write(f"Skipped {skipped_packets_count} packets that did not contain a source IP address.", WARN)
             raise JsonKeyError("source ip adresses(layers->eth->src)",
                                skipped_packets_count)
-
         return IPs
 
     def extract_time(self):
@@ -343,5 +336,4 @@ class CommunicationHandler:
             self.log.write(f"Skipped {skipped_packets_count} packets that did not have a timestamp.", WARN)
             raise JsonKeyError("time(timestamp)",
                                skipped_packets_count)
-
         return times

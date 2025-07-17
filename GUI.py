@@ -38,7 +38,6 @@ class PopupDialog(QDialog):
     def __init__(self, text, parent=None):
         super().__init__(parent=parent)
 
-        # self.log.write(text)
         self.setWindowTitle("Something went wrong")
 
         # top
