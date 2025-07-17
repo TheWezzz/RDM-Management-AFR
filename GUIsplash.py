@@ -120,9 +120,8 @@ class ConfigWindow(QMainWindow):
         for check in self.checkboxlist:
             if check.isChecked():
                 self.com_handler_setup.selected_devices.append(check.device)
-        # self.com_handler_setup.selected_devices =
         data = create_dummy_data()
         self.main_screen = MainWindow(data, self.com_handler_setup)
-        self.main_screen.show()  # TODO make sure new window shows
+        self.main_screen.show()
 
-    # TODO add popup while waiting for ip scan, and display available ip's (in scrollable area?)
+    # TODO add popup while waiting for ip scan

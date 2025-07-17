@@ -4,9 +4,8 @@ from PyQt6.QtWidgets import (QWidget, QPushButton, QListWidget, QLabel, QVBoxLay
                              QHBoxLayout, QGridLayout, QListWidgetItem, QTabWidget)
 
 from FILENAMES import *
-from data import str_to_html
-from data import param_to_string, datetime_to_unix
-from logger import Logger, INFO, WARN, ERR
+from data import param_to_string, datetime_to_unix, str_to_html
+from logger import Logger, INFO, ERR
 
 
 class FixtureTab(QWidget):
