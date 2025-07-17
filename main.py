@@ -26,4 +26,4 @@ if __name__ == "__main__":
     app.exec()
 
     # SCAPY SNIFFER TEST
-    # handler1.sniff_data()
+    # handler1.sniff_json_data()

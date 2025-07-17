@@ -222,7 +222,7 @@ class CommunicationHandler:
             if packet[IP].src not in self.available_ips:
                 self.available_ips.append(packet[IP].src)
 
-    def sniff_data(self, src_ip):
+    def sniff_json_data(self, src_ip):
         if src_ip == "selected":
             for dev in self.selected_devices:
                 bpf_filter = f"udp and src host {dev['ip address']}"

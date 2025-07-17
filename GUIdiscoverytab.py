@@ -1,8 +1,10 @@
-from PyQt6.QtGui import QStandardItemModel
+import datetime
+from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QWidget, QPushButton, QComboBox, QVBoxLayout, QHBoxLayout, QTableView, QLabel
 
 from FILENAMES import *
 from data import str_to_html
+from jsonToLogHelperFunctions import *
 from logger import Logger
 
 
@@ -25,10 +27,8 @@ class DiscoveryTab(QWidget):
         info_label = QLabel(str_to_html(self.com_handler.get_info()))
         # Create widgets right
         self.discovery_table_view = QTableView()
-        self.discovery_model = QStandardItemModel(0, 4)
-        self.discovery_model.setHorizontalHeaderLabels(
-            ["Naam", "IP-adres", "Firmware", "RDM UID"]
-        )
+        self.discovery_model = QStandardItemModel(0, 5)
+        self.discovery_model.setHorizontalHeaderLabels(["Tijd", "IP-adres", "Naam", "Firmware", "RDM UID"])
         self.discovery_table_view.setModel(self.discovery_model)
 
         # --- LAYOUT ---
@@ -50,4 +50,17 @@ class DiscoveryTab(QWidget):
         main_layout.addLayout(right_layout, 4)  # Add right layout with a stretch factor of 4 (takes more space)
 
     def _scan_network(self):
-        self.com_handler.sniff_data("selected")
+        self.com_handler.sniff_json_data("selected")
+        selection_result = search_payload(self.com_handler, [fixture_name])
+        for res in selection_result:
+            self._add_row_to_model(res)
+
+    def _add_row_to_model(self, param_dict):
+        time = str(datetime.datetime.fromtimestamp(param_dict.pop("time")))
+        ip = str(param_dict.pop("source_ip_address"))
+
+        itemlist = [QStandardItem(time), QStandardItem(ip)]
+        for key in param_dict.keys():
+            if key not in ["time", "source_ip_address"]:
+                itemlist.append(QStandardItem(str(param_dict.get(key, ""))))
+        self.discovery_model.appendRow(itemlist)
