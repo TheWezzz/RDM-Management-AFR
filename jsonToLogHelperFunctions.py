@@ -20,7 +20,9 @@ class HexSelection:
         self.length = length
         self.formatting = formatting
 
-def search_payload(com_handler: CommunicationHandler, selections: list[HexSelection], prettyprint=False) -> list[list]:
+fixture_name = HexSelection("Value", "0x21", 14, "ascii")
+
+def search_payload(com_handler: CommunicationHandler, selections: list[HexSelection], prettyprint=False) -> list[dict]:
         """
         Searches in specific bytes of the json tree stored in the class. To specify a selection, a HexSelection must be
         passed containing the name of the value that is being searched for, the address index, the length which has
@@ -44,7 +46,7 @@ def search_payload(com_handler: CommunicationHandler, selections: list[HexSelect
                 f"(relative time: {times[i]}, total length: {len(hex_payloads[i])} characters / {len(hex_payloads[i]) // 2} bytes)\n"
                 f"source: {source_ips[i]}") if prettyprint else print(f"searching packet {i}")
 
-            valuelist = [times[i], source_ips[i]]
+            values_dict = {"time": times[i], "source_ip_address": source_ips[i]}
             for sel in selections:
                 if prettyprint:
                     print(f"  |\n  Zoeken naar {sel.name}")
@@ -94,9 +96,9 @@ def search_payload(com_handler: CommunicationHandler, selections: list[HexSelect
                     print("  |  | Found characters: ", end="")
                     print(value)
                     print("  |  L", "_" * 50)  # Scheidingsteken na verwerking van elke pointer in de lijst
-                valuelist.append(value)
+                values_dict.update({sel.name: value})
             if prettyprint:
                 print("  L", "_" * 60)  # Scheidingsteken na verwerking van elke selection in de lijst
 
-            selection_result.append(valuelist)
+            selection_result.append(values_dict)
         return selection_result
