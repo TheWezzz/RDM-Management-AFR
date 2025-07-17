@@ -4,12 +4,9 @@ from PyQt6.QtWidgets import (QWidget, QPushButton, QListWidget, QLabel, QVBoxLay
                              QHBoxLayout, QGridLayout, QListWidgetItem, QTabWidget)
 
 from FILENAMES import *
+from data import str_to_html
 from data import param_to_string, datetime_to_unix
 from logger import Logger, INFO, WARN, ERR
-
-
-def str_to_html(s: str) -> str:
-    return s.replace("\n", "<br>")
 
 
 class FixtureTab(QWidget):
@@ -215,7 +212,7 @@ class FixtureTab(QWidget):
             # if uid_err[:4] == "WARN":
             #     PopupDialog(
             #         uid_err)  # TODO: During this dialog the message label shows the selected uid. This should stay when dialog is closed
-            self.log.write(uid_err, WARN)
+            self.log.write(uid_err, INFO)
         message = ""
         if device_records:
             # TODO: make get functions in data for lamp hours, usage per month and firmware version, all preferably returning dictionaries
